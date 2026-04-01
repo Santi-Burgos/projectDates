@@ -1,0 +1,57 @@
+package san.projectdates.infrastructure.persistence;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+
+import san.projectdates.core.entities.User;
+import san.projectdates.core.repositories.UserRepository;
+import san.projectdates.core.entities.Role;
+
+public class SqlUserRepository implements UserRepository {
+
+  @Override
+  public User saveUser(User user){
+    String querySaveUser = """
+    INSERT INTO users(user_id, email, password, username, lastname, birthday, rol_id, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    RETURNING *
+    """;
+
+    try(
+      Connection conn = DbConfig.getConnection();
+      PreparedStatement pstmt = conn.prepareStatement(querySaveUser);
+    ){
+      pstmt.setObject(1, user.getId());
+      pstmt.setString(2, user.getEmail());
+      pstmt.setString(3, user.getPassword());
+      pstmt.setString(4, user.getUsername());
+      pstmt.setString(5, user.getLastname());
+      pstmt.setObject(6, user.getBirthday());
+      pstmt.setInt(7, user.getRole().getValue());
+      pstmt.setObject(8, user.getCreatedAt());
+
+      ResultSet rs = pstmt.executeQuery();
+      if (rs.next()) {
+        return new User(
+          rs.getObject("user_id", java.util.UUID.class),
+          rs.getString("username"),
+          rs.getString("email"),
+          rs.getString("password"),
+          rs.getString("lastname"),
+          Role.fromValue(rs.getInt("rol_id")),       
+          rs.getObject("birthday", java.time.LocalDate.class),
+          rs.getObject("created_at", java.time.OffsetDateTime.class)
+        );
+      }
+      return null;
+    }catch(Exception e){
+      throw new RuntimeException("Error al guardar en la base de datos: " + e.getMessage());
+    }
+  }
+
+  @Override
+  public void getUserByEmail(String email){
+    
+  }
+}
