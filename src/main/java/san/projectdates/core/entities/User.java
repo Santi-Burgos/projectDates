@@ -1,7 +1,6 @@
 package san.projectdates.core.entities;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -16,9 +15,6 @@ public class User {
   private Role role;
   private LocalDate birthday;
   private OffsetDateTime createdAt;
-
-
-
 
   public User(){}
 
@@ -42,7 +38,6 @@ public class User {
     this.birthday = birthday;
     this.createdAt = createdAt;
   }
-
 
 
   public UUID getId(){

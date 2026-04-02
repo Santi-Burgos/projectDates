@@ -1,5 +1,7 @@
 package san.projectdates.core.services;
 
+import java.util.UUID;
+
 import san.projectdates.core.entities.Role;
 import san.projectdates.core.entities.User;
 import san.projectdates.core.repositories.UserRepository;
@@ -13,21 +15,48 @@ public class UserService {
   }
 
   public UserResponse createNewUser(String username, String email, String password, String lastname, Role role){
-    try{
-      User newUser = new User(username, email, password, lastname, role);
-      User savedUser = this.userRepository.saveUser(newUser);
-      if(savedUser != null){
-        return new UserResponse(
-          savedUser.getId(),
-          savedUser.getUsername(),
-          savedUser.getLastname(),
-          savedUser.getEmail(),
-          savedUser.getRole()
-        );
-      }
-      throw new RuntimeException("El repositorio no devolvió el usuario guardado.");
-    }catch(Exception e){
-      throw new RuntimeException("Error en la creación del usuario: " + e.getMessage());
+    User newUser = new User(username, email, password, lastname, role);
+    
+    if(isEmailTaken(newUser.getEmail())){
+      throw new RuntimeException("El correo está en uso");
     }
+
+    User savedUser = userRepository.saveUser(newUser);
+
+    return new UserResponse(savedUser);
+  }
+
+  public UserResponse findUserByEmail(String email) {
+    if(!this.isEmailTaken(email)){
+      throw new RuntimeException("el usuario con este email no existe");
+    }
+
+    User getUserByEmail = this.findEntityByEmail(email);
+    return new UserResponse(getUserByEmail);
+  }
+
+  public User findEntityByEmail(String email) {
+    User getUser = userRepository.getUserByEmail(email);
+    if(getUser == null){
+      throw new RuntimeException("No se ha podido obtener el usuario con el email: " + email);
+    }
+    return getUser;  
+  }
+
+  public boolean isEmailTaken(String email) {
+    return userRepository.emailIsAlreadyUse(email);
+  }
+
+  public String deleteUserById(UUID id){
+    if(!userRepository.validateUserExist(id)){
+      throw new RuntimeException("El usuario no existe");
+    }
+
+    int deleteUser = userRepository.deleteUserById(id);
+    if(deleteUser == 0){
+      throw new RuntimeException("No se ha eliminado ningun usuario");
+    }
+    String response = "Filas eliminadas: " + deleteUser + "Usuario eliminado con exito";
+    return response;
   }
 }

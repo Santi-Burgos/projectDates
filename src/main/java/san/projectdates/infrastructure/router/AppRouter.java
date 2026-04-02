@@ -16,6 +16,8 @@ public class AppRouter {
     config.routes.apiBuilder(() -> {
       path("/api/users", () -> {
         post(userController::create);
+        delete("/{id}", userController::delete);
+        get(userController::findOne);
       });
     });
   }

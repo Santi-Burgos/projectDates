@@ -3,6 +3,8 @@ package san.projectdates.infrastructure.persistence;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.UUID;
 
 import san.projectdates.core.entities.User;
 import san.projectdates.core.repositories.UserRepository;
@@ -49,9 +51,98 @@ public class SqlUserRepository implements UserRepository {
       throw new RuntimeException("Error al guardar en la base de datos: " + e.getMessage());
     }
   }
+  
+  @Override
+  public Boolean emailIsAlreadyUse(String email){
+    String queryFindEmail = """
+      SELECT EXISTS
+        (SELECT 1 FROM users WHERE email = ?)
+    """;
+    try(
+      Connection conn = DbConfig.getConnection();
+      PreparedStatement pstmt = conn.prepareStatement(queryFindEmail);
+    ){
+      pstmt.setString(1, email);
+      ResultSet rs = pstmt.executeQuery();
+
+      if(rs.next()){
+        return rs.getBoolean(1);
+      }
+      return false;
+    }catch(SQLException e){
+      throw new RuntimeException("Error al buscar en la base de datos: " + e.getMessage());
+    }
+  }
 
   @Override
-  public void getUserByEmail(String email){
-    
+  public Boolean validateUserExist(UUID id){
+    String queryValidateUser = """
+      SELECT EXISTS
+        (SELECT 1 FROM users WHERE user_id = ?)
+      """;
+    try(
+      Connection conn = DbConfig.getConnection();
+      PreparedStatement pstmt = conn.prepareStatement(queryValidateUser);  
+    ){
+      pstmt.setObject(1, id);
+      ResultSet rs = pstmt.executeQuery();
+      if(rs.next()){
+        return rs.getBoolean(1);
+      }
+      return false;
+    }catch(SQLException e){
+      throw new RuntimeException("Error al buscar en la base de datos");
+    }
+  }
+
+
+  @Override
+  public int deleteUserById(UUID id){
+    String queryDeleteUser = """
+      DELETE FROM users
+      WHERE user_id = ?  
+    """;
+    try(
+      Connection conn = DbConfig.getConnection();
+      PreparedStatement pstmt = conn.prepareStatement(queryDeleteUser);
+    ){
+      pstmt.setObject(1, id);
+      
+      int affectedRows = pstmt.executeUpdate();
+
+      return affectedRows;
+    }catch(SQLException e){
+      throw new RuntimeException("Error al buscar en la base de datos: " + e.getMessage());
+    }
+  }
+
+  @Override
+  public User getUserByEmail(String email){
+    String queryFindUserByEmail = """
+      SELECT * FROM users 
+      WHERE email = ?
+    """;
+    try(
+      Connection conn = DbConfig.getConnection();
+      PreparedStatement pstmt = conn.prepareStatement(queryFindUserByEmail);
+    ){
+      pstmt.setString(1, email);
+      ResultSet rs = pstmt.executeQuery();
+      if(rs.next()){
+        return new User(
+          rs.getObject("user_id", java.util.UUID.class),
+          rs.getString("username"),
+          rs.getString("email"),
+          rs.getString("password"),
+          rs.getString("lastname"),
+          Role.fromValue(rs.getInt("rol_id")),       
+          rs.getObject("birthday", java.time.LocalDate.class),
+          rs.getObject("created_at", java.time.OffsetDateTime.class)
+        );
+      }
+    return null;
+    }catch(SQLException e){
+      throw new RuntimeException("Error al buscar en la base de datos: " + e.getMessage());
+    }
   }
 }

@@ -2,6 +2,7 @@ package san.projectdates.infrastructure.http.dtos;
 
 import java.util.UUID;
 import san.projectdates.core.entities.Role;
+import san.projectdates.core.entities.User;
 
 public record UserResponse (
   UUID id,
@@ -9,4 +10,14 @@ public record UserResponse (
   String lastname,
   String email,
   Role role
-){}
+){
+  public UserResponse(User user){
+    this(
+      user.getId(),
+      user.getUsername(),
+      user.getLastname(),
+      user.getEmail(),
+      user.getRole()
+    );
+  }
+}
