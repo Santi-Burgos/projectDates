@@ -4,6 +4,8 @@ import san.projectdates.core.services.UserService;
 import san.projectdates.infrastructure.http.dtos.UserCreateRequest;
 import san.projectdates.infrastructure.http.dtos.UserResponse;
 import io.javalin.http.Context;
+
+import java.util.List;
 import java.util.UUID;
 
 public class UserController {
@@ -47,6 +49,15 @@ public class UserController {
       String deleteMessage = userService.deleteUserById(id);
 
       ctx.status(200).result(deleteMessage);
+    } catch (Exception e) {
+      ctx.status(400).result(e.getMessage());
+    }
+  }
+
+  public void findAll(Context ctx){
+    try {
+      List<UserResponse> getAllUsers = userService.findAllUsers();
+      ctx.status(200).json(getAllUsers);
     } catch (Exception e) {
       ctx.status(400).result(e.getMessage());
     }

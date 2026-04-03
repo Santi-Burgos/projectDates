@@ -17,7 +17,8 @@ public class AppRouter {
       path("/api/users", () -> {
         post(userController::create);
         delete("/{id}", userController::delete);
-        get(userController::findOne);
+        get("/{email}", userController::findOne);
+        get("/", userController::findAll);
       });
     });
   }

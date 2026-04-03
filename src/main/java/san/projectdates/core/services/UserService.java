@@ -1,5 +1,6 @@
 package san.projectdates.core.services;
 
+import java.util.List;
 import java.util.UUID;
 
 import san.projectdates.core.entities.Role;
@@ -58,5 +59,12 @@ public class UserService {
     }
     String response = "Filas eliminadas: " + deleteUser + "Usuario eliminado con exito";
     return response;
+  }
+
+  public List<UserResponse> findAllUsers(){
+    List<User>  fullUsers = userRepository.findAllUsers();
+    return fullUsers.stream()
+      .map(user -> new UserResponse(user))
+      .toList();
   }
 }

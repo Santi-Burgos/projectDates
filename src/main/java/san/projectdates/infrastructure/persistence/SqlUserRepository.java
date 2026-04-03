@@ -4,6 +4,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import san.projectdates.core.entities.User;
@@ -143,6 +147,38 @@ public class SqlUserRepository implements UserRepository {
     return null;
     }catch(SQLException e){
       throw new RuntimeException("Error al buscar en la base de datos: " + e.getMessage());
+    }
+  }
+
+
+  public List<User> findAllUsers(){
+    String querySelectAllUser = """
+      SELECT * FROM users    
+    """;
+    List<User> users = new ArrayList<>();
+
+    try(
+      Connection conn = DbConfig.getConnection();
+      PreparedStatement pstmt = conn.prepareStatement(querySelectAllUser);
+      ResultSet rs = pstmt.executeQuery();
+    ){
+      while (rs.next()) {
+        UUID id = rs.getObject("user_id", java.util.UUID.class);
+        String username = rs.getString("username");
+        String password = rs.getString("password");
+        String email = rs.getString("email");
+        String lastname = rs.getString("lastname"); 
+        Role role = Role.fromValue(rs.getInt("rol_id")); 
+        LocalDate birthday = rs.getObject("birthday", LocalDate.class);
+        OffsetDateTime createdAt = rs.getObject("created_at", OffsetDateTime.class);
+        User user = new User(id, username, email, password, lastname, role, birthday, createdAt);
+        
+        users.add(user);
+      }
+      
+      return users;
+    } catch (SQLException e) {
+      throw new RuntimeException("Error al buscar los usuarios en la base de datos: " + e.getMessage());
     }
   }
 }
