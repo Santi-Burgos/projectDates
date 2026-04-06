@@ -1,4 +1,4 @@
-package san.projectdates.infrastructure.http.dtos;
+package san.projectdates.core.dtos;
 
 import san.projectdates.core.entities.Role;
 

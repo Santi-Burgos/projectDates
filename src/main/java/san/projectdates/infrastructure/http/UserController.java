@@ -1,8 +1,8 @@
 package san.projectdates.infrastructure.http;
 
+import san.projectdates.core.dtos.UserCreateRequest;
+import san.projectdates.core.dtos.UserResponse;
 import san.projectdates.core.services.UserService;
-import san.projectdates.infrastructure.http.dtos.UserCreateRequest;
-import san.projectdates.infrastructure.http.dtos.UserResponse;
 import io.javalin.http.Context;
 
 import java.util.List;

@@ -3,10 +3,10 @@ package san.projectdates.core.services;
 import java.util.List;
 import java.util.UUID;
 
+import san.projectdates.core.dtos.UserResponse;
 import san.projectdates.core.entities.Role;
 import san.projectdates.core.entities.User;
 import san.projectdates.core.repositories.UserRepository;
-import san.projectdates.infrastructure.http.dtos.UserResponse;
 
 public class UserService {
   private final UserRepository userRepository;
