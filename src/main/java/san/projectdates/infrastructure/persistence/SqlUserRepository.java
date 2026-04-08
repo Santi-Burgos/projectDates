@@ -40,14 +40,14 @@ public class SqlUserRepository implements UserRepository {
       ResultSet rs = pstmt.executeQuery();
       if (rs.next()) {
         return new User(
-          rs.getObject("user_id", java.util.UUID.class),
+          rs.getObject("user_id", UUID.class),
           rs.getString("username"),
           rs.getString("email"),
           rs.getString("password"),
           rs.getString("lastname"),
           Role.fromValue(rs.getInt("rol_id")),       
-          rs.getObject("birthday", java.time.LocalDate.class),
-          rs.getObject("created_at", java.time.OffsetDateTime.class)
+          rs.getObject("birthday", LocalDate.class),
+          rs.getObject("created_at", OffsetDateTime.class)
         );
       }
       return null;
@@ -134,14 +134,14 @@ public class SqlUserRepository implements UserRepository {
       ResultSet rs = pstmt.executeQuery();
       if(rs.next()){
         return new User(
-          rs.getObject("user_id", java.util.UUID.class),
+          rs.getObject("user_id", UUID.class),
           rs.getString("username"),
           rs.getString("email"),
           rs.getString("password"),
           rs.getString("lastname"),
           Role.fromValue(rs.getInt("rol_id")),       
-          rs.getObject("birthday", java.time.LocalDate.class),
-          rs.getObject("created_at", java.time.OffsetDateTime.class)
+          rs.getObject("birthday", LocalDate.class),
+          rs.getObject("created_at", OffsetDateTime.class)
         );
       }
     return null;
@@ -153,7 +153,7 @@ public class SqlUserRepository implements UserRepository {
 
   public List<User> findAllUsers(){
     String querySelectAllUser = """
-      SELECT * FROM users    
+      SELECT * FROM users
     """;
     List<User> users = new ArrayList<>();
 
@@ -163,7 +163,7 @@ public class SqlUserRepository implements UserRepository {
       ResultSet rs = pstmt.executeQuery();
     ){
       while (rs.next()) {
-        UUID id = rs.getObject("user_id", java.util.UUID.class);
+        UUID id = rs.getObject("user_id", UUID.class);
         String username = rs.getString("username");
         String password = rs.getString("password");
         String email = rs.getString("email");

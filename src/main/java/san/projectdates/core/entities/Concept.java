@@ -37,7 +37,7 @@ public class Concept {
     return id;
   }
 
-  public void setId() {
+  public void setId(){
     this.id = UUID.randomUUID();
   }
 
@@ -91,6 +91,10 @@ public class Concept {
 
   public List<TimeRange> getSchedule() {
     return schedule;
+  }
+
+  public void setToggleStatus(){
+    this.isActive = !this.isActive;
   }
 
   public void setSchedule(Boolean is24h, List<TimeRange> schedule) {

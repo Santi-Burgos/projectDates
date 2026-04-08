@@ -35,6 +35,9 @@ public class AppRouter {
 
       path("/api/concept", () ->{
         post(conceptController::createConcept);
+        get("/{id}", conceptController::findOneConcept);
+        get(conceptController::findActiveConcept);
+        delete("/{id}", conceptController::deleteConcept);
       });
     });
   }
