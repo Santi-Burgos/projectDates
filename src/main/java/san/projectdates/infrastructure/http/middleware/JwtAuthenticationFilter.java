@@ -16,9 +16,13 @@ public class JwtAuthenticationFilter {
     this.jwtService = jwtService;
   }
 
-  public void handle(Context ctx) {
+  public void handleValidateToken(Context ctx) {
     String path = ctx.path();
-    if (path.contains("/api/auth")) {
+    String method = ctx.method().name();
+    boolean isLogin = path.equals("/api/auth") && method.equals("POST");
+    boolean isRegister = path.equals("/api/users/register") && method.equals("POST");
+
+    if (isLogin || isRegister) {
       return;
     }
 

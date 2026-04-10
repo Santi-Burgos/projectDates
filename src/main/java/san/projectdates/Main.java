@@ -32,7 +32,7 @@ public class Main {
     AuthService authService = new AuthService(userService, jwtService);
 
 
-    AppRouter router = new AppRouter(userService, authService, conceptService);
+    AppRouter router = new AppRouter(userService, authService, conceptService, jwtService);
 
     var app = Javalin.create(config -> {
       config.bundledPlugins.enableDevLogging();
