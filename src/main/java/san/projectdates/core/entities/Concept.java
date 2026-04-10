@@ -3,6 +3,8 @@ package san.projectdates.core.entities;
 import java.util.List;
 import java.util.UUID;
 
+import san.projectdates.core.dtos.ConceptRequest;
+
 public class Concept {
   UUID id;
   String name;
@@ -19,6 +21,7 @@ public class Concept {
     this.setId();
     this.setName(name);
     this.setDetails(details);
+    setCapacity(capacity);
     this.setIsActive(isActive);
     this.setIs24h(is24h);
     this.setSchedule(is24h, schedule);
@@ -105,6 +108,18 @@ public class Concept {
       validateNoOverlap(schedule);
     }
     this.schedule = schedule;
+  }
+
+  public void merge(ConceptRequest request){
+    if(request.name() != null) this.name = request.name();
+    if (request.details() != null) this.details = request.details();
+    if (request.capacity() > 0) this.capacity = request.capacity();
+    if (request.isActive() != null) this.isActive = request.isActive();
+    if (request.is24h() != null) this.is24h = request.is24h();
+    
+    if (request.schedule() != null) {
+      this.setSchedule(this.is24h, request.schedule());
+    }
   }
 
   private void validateNoOverlap(List<TimeRange> schedule) {

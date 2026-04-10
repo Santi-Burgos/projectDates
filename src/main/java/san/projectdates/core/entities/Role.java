@@ -22,6 +22,5 @@ public enum Role {
       }
     }
     throw new IllegalArgumentException("Rol invalido: " + value);
-  
   }
 }

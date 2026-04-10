@@ -147,43 +147,40 @@ public class SqlConceptRepository implements ConceptRepository {
   @Override
   public List<Concept> findAllActiveConcept() {
     String queryGetAllConcept = """
-      SELECT
-      c.concept_id,
-      c.name,
-      c.details,
-      c.is_active,
-      c.capacity,
-      c.is_24h AS fullTime,
-      s.slot_id,
-      s.start_at,
-      s.end_at
-      FROM concept c
-      LEFT JOIN slot s
-        ON c.concept_id = s.concept_id
-      WHERE c.is_active = true
-    """;
+          SELECT
+          c.concept_id,
+          c.name,
+          c.details,
+          c.is_active,
+          c.capacity,
+          c.is_24h AS fullTime,
+          s.slot_id,
+          s.start_at,
+          s.end_at
+          FROM concept c
+          LEFT JOIN slot s
+            ON c.concept_id = s.concept_id
+          WHERE c.is_active = true
+        """;
     Map<UUID, Concept> conceptMap = new LinkedHashMap<>();
     Map<UUID, List<TimeRange>> tempSchedules = new HashMap<>();
 
     try (
-      Connection conn = DbConfig.getConnection();
-      PreparedStatement pstmt = conn.prepareStatement(queryGetAllConcept);
-      ResultSet rs = pstmt.executeQuery();
-    ) {
+        Connection conn = DbConfig.getConnection();
+        PreparedStatement pstmt = conn.prepareStatement(queryGetAllConcept);
+        ResultSet rs = pstmt.executeQuery();) {
       while (rs.next()) {
         UUID conceptId = rs.getObject("concept_id", UUID.class);
         Concept concept = conceptMap.get(conceptId);
 
-
         if (concept == null) {
           concept = new Concept(
-            conceptId,
-            rs.getString("name"),
-            rs.getString("details"),
-            rs.getInt("capacity"),
-            rs.getBoolean("is_active"),
-            rs.getBoolean("fullTime")
-          );
+              conceptId,
+              rs.getString("name"),
+              rs.getString("details"),
+              rs.getInt("capacity"),
+              rs.getBoolean("is_active"),
+              rs.getBoolean("fullTime"));
 
           conceptMap.put(conceptId, concept);
           tempSchedules.put(conceptId, new ArrayList<>());
@@ -200,7 +197,7 @@ public class SqlConceptRepository implements ConceptRepository {
       for (UUID id : conceptMap.keySet()) {
         Concept concept = conceptMap.get(id);
         List<TimeRange> schedule = tempSchedules.get(id);
-        
+
         concept.setSchedule(concept.getIs24h(), schedule);
       }
 
@@ -213,25 +210,24 @@ public class SqlConceptRepository implements ConceptRepository {
   @Override
   public Concept findConceptById(UUID conceptId) {
     String queryFindConceptById = """
-      SELECT
-      c.concept_id,
-      c.name,
-      c.details,
-      c.is_active,
-      c.capacity,
-      c.is_24h AS fullTime,
-      s.slot_id,
-      s.start_at,
-      s.end_at
-      FROM concept c
-      LEFT JOIN slot s
-      ON c.concept_id = s.concept_id
-      WHERE c.concept_id = ?
-    """;
+          SELECT
+          c.concept_id,
+          c.name,
+          c.details,
+          c.is_active,
+          c.capacity,
+          c.is_24h AS fullTime,
+          s.slot_id,
+          s.start_at,
+          s.end_at
+          FROM concept c
+          LEFT JOIN slot s
+          ON c.concept_id = s.concept_id
+          WHERE c.concept_id = ?
+        """;
     try (
-      Connection conn = DbConfig.getConnection();
-      PreparedStatement pstmt = conn.prepareStatement(queryFindConceptById);
-    ) {
+        Connection conn = DbConfig.getConnection();
+        PreparedStatement pstmt = conn.prepareStatement(queryFindConceptById);) {
       pstmt.setObject(1, conceptId);
       ResultSet rs = pstmt.executeQuery();
 
@@ -264,6 +260,72 @@ public class SqlConceptRepository implements ConceptRepository {
       return concept;
     } catch (SQLException e) {
       throw new RuntimeException("Error al obtener el concepto por id: " + e.getMessage());
+    }
+  }
+
+  @Override
+  public Concept updateConcept(Concept conceptToUpdate) {
+    String updateConceptQuery = """
+          UPDATE concept
+          SET name = ?, details = ?, capacity = ?, is_active = ?, is_24h = ?
+          WHERE concept_id = ?
+        """;
+
+    String deleteSlotsQuery = "DELETE FROM slot WHERE concept_id = ?";
+    String insertSlotsQuery = "INSERT INTO slot(start_at, end_at, concept_id) VALUES(?, ?, ?)";
+
+    Connection conn = null;
+    try {
+      conn = DbConfig.getConnection();
+      conn.setAutoCommit(false);
+
+      try (PreparedStatement pstmt = conn.prepareStatement(updateConceptQuery)) {
+        pstmt.setString(1, conceptToUpdate.getName());
+        pstmt.setString(2, conceptToUpdate.getDetails());
+        pstmt.setInt(3, conceptToUpdate.getCapacity());
+        pstmt.setBoolean(4, conceptToUpdate.getIsActive());
+        pstmt.setBoolean(5, conceptToUpdate.getIs24h());
+        pstmt.setObject(6, conceptToUpdate.getId());
+        pstmt.executeUpdate();
+      }
+
+      try (PreparedStatement pstmt = conn.prepareStatement(deleteSlotsQuery)) {
+        pstmt.setObject(1, conceptToUpdate.getId());
+        pstmt.executeUpdate();
+      }
+
+      if (!conceptToUpdate.getIs24h() && conceptToUpdate.getSchedule() != null) {
+        try (PreparedStatement pstmt = conn.prepareStatement(insertSlotsQuery)) {
+          for (TimeRange scheduleConcept : conceptToUpdate.getSchedule()) {
+            pstmt.setObject(1, Time.valueOf(scheduleConcept.getOpenTime()));
+            pstmt.setObject(2, Time.valueOf(scheduleConcept.getCloseTime()));
+            pstmt.setObject(3, conceptToUpdate.getId());
+            pstmt.addBatch();
+          }
+          pstmt.executeBatch();
+        }
+      }
+
+      conn.commit();
+      return conceptToUpdate;
+    } catch (SQLException e) {
+      if (conn != null) {
+        try {
+          conn.rollback();
+        } catch (SQLException ex) {
+          throw new RuntimeException("Error al hacer rollback: " + ex.getMessage());
+        }
+      }
+      throw new RuntimeException("Error al actualizar el concepto: " + e.getMessage());
+    } finally {
+      if (conn != null) {
+        try {
+          conn.setAutoCommit(true);
+          conn.close();
+        } catch (SQLException e) {
+          throw new RuntimeException("Error al cerrar conexión: " + e.getMessage());
+        }
+      }
     }
   }
 }

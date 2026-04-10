@@ -11,44 +11,57 @@ import san.projectdates.core.services.ConceptService;
 public class ConceptController {
   private final ConceptService conceptService;
 
-  public ConceptController(ConceptService conceptService){
+  public ConceptController(ConceptService conceptService) {
     this.conceptService = conceptService;
   }
 
-  public void createConcept(Context ctx){
-    try{
+  public void createConcept(Context ctx) {
+    try {
       ConceptRequest conceptToCreate = ctx.bodyAsClass(ConceptRequest.class);
 
       ConceptResponse newConcept = conceptService.createConcept(conceptToCreate);
       ctx.status(201).json(newConcept);
-    }catch(Exception e){
+    } catch (Exception e) {
       ctx.status(500).result(e.getMessage());
     }
   }
 
-  public void deleteConcept(Context ctx){
-    try{
+  public void updateConcept(Context ctx) {
+    try {
+      String idParam = ctx.pathParam("id");
+      UUID conceptId = UUID.fromString(idParam);
+      ConceptRequest conceptToUpdate = ctx.bodyAsClass(ConceptRequest.class);
+      ConceptResponse updatedConcept = conceptService.updateConcept(conceptToUpdate, conceptId);
+
+      ctx.status(200).json(updatedConcept);
+    } catch (Exception e) {
+      ctx.status(500).result(e.getMessage());
+    }
+  }
+
+  public void deleteConcept(Context ctx) {
+    try {
       String idParam = ctx.pathParam("id");
       UUID id = UUID.fromString(idParam);
       String deleteConcept = conceptService.deleteConcept(id);
 
       ctx.status(200).json(deleteConcept);
-    }catch(Exception e){
+    } catch (Exception e) {
       ctx.status(500).result(e.getMessage());
     }
   }
 
-  public void findActiveConcept(Context ctx){
-    try{
+  public void findActiveConcept(Context ctx) {
+    try {
       List<ConceptResponse> conceptList = conceptService.findActiveConcept();
 
       ctx.status(200).json(conceptList);
-    }catch(Exception e){
+    } catch (Exception e) {
       ctx.status(500).result(e.getMessage());
     }
   }
 
-  public void findOneConcept(Context ctx){
+  public void findOneConcept(Context ctx) {
     try {
       String idParam = ctx.pathParam("id");
       UUID conceptId = UUID.fromString(idParam);

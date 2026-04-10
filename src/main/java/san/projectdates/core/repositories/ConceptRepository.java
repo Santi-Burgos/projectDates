@@ -13,4 +13,6 @@ public interface ConceptRepository {
   List<Concept> findAllActiveConcept();
 
   Concept findConceptById(UUID conceptId);
+
+  Concept updateConcept(Concept conceptToUpdate);
 }

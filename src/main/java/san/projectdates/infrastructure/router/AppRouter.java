@@ -44,6 +44,7 @@ public class AppRouter {
         post(conceptController::createConcept);
         get("/{id}", conceptController::findOneConcept);
         get(conceptController::findActiveConcept);
+        patch("/{id}", conceptController::updateConcept);
         delete("/{id}", conceptController::deleteConcept);
       });
     });

@@ -29,7 +29,7 @@ public class UserService {
 
   public UserResponse findUserByEmail(String email) {
     if(!this.isEmailTaken(email)){
-      throw new RuntimeException("el usuario con este email no existe");
+      throw new RuntimeException("El usuario con este email no existe");
     }
 
     User getUserByEmail = this.findEntityByEmail(email);
