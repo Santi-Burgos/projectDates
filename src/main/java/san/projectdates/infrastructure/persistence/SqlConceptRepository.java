@@ -36,8 +36,9 @@ public class SqlConceptRepository implements ConceptRepository {
         """;
 
     try (
-        Connection conn = DbConfig.getConnection();
-        PreparedStatement pstmt = conn.prepareStatement(saveConcept)) {
+      Connection conn = DbConfig.getConnection();
+      PreparedStatement pstmt = conn.prepareStatement(saveConcept)
+    ){
       pstmt.setObject(1, newConcept.getId());
       pstmt.setString(2, newConcept.getName());
       pstmt.setString(3, newConcept.getDetails());
@@ -48,12 +49,13 @@ public class SqlConceptRepository implements ConceptRepository {
       ResultSet rs = pstmt.executeQuery();
       if (rs.next()) {
         return new Concept(
-            rs.getObject("concept_id", java.util.UUID.class),
-            rs.getString("name"),
-            rs.getString("details"),
-            rs.getInt("capacity"),
-            rs.getBoolean("is_active"),
-            rs.getBoolean("is_24h"));
+          rs.getObject("concept_id", java.util.UUID.class),
+          rs.getString("name"),
+          rs.getString("details"),
+          rs.getInt("capacity"),
+          rs.getBoolean("is_active"),
+          rs.getBoolean("is_24h")
+        );
       }
 
       return null;

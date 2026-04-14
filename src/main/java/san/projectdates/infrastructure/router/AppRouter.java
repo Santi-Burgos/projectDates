@@ -1,8 +1,10 @@
 package san.projectdates.infrastructure.router;
 
+import san.projectdates.core.services.AppointmentService;
 import san.projectdates.core.services.AuthService;
 import san.projectdates.core.services.ConceptService;
 import san.projectdates.core.services.UserService;
+import san.projectdates.infrastructure.http.AppointmentController;
 import san.projectdates.infrastructure.http.AuthController;
 import san.projectdates.infrastructure.http.ConceptController;
 import san.projectdates.infrastructure.http.UserController;
@@ -16,13 +18,20 @@ public class AppRouter {
   private final AuthController authController;
   private final ConceptController conceptController;
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
+  private final AppointmentController appointmentController;
 
-  public AppRouter(UserService userService, AuthService authService, ConceptService conceptService,
-      JwtService jwtService) {
+  public AppRouter(
+    UserService userService, 
+    AuthService authService, 
+    ConceptService conceptService,
+    JwtService jwtService,
+    AppointmentService appointmentService
+  ) {
     this.userController = new UserController(userService);
     this.authController = new AuthController(authService);
     this.conceptController = new ConceptController(conceptService);
     this.jwtAuthenticationFilter = new JwtAuthenticationFilter(userService, jwtService);
+    this.appointmentController = new AppointmentController(appointmentService);
   }
 
   public void registerRoutes(JavalinConfig config) {
@@ -46,6 +55,10 @@ public class AppRouter {
         get(conceptController::findActiveConcept);
         patch("/{id}", conceptController::updateConcept);
         delete("/{id}", conceptController::deleteConcept);
+      });
+
+      path("/api/reservation", () -> {
+        post(appointmentController::createReservation);
       });
     });
   }

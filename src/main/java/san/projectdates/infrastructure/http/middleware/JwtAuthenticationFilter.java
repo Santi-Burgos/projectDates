@@ -55,5 +55,6 @@ public class JwtAuthenticationFilter {
 
   private void setCurrentUser(Context ctx, User user) {
     ctx.attribute("currentUser", user);
+    ctx.attribute("currentUserId", user.getId());
   }
 }
