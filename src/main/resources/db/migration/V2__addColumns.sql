@@ -1,0 +1,2 @@
+ALTER TABLE appointments
+ADD appointments_day DATE

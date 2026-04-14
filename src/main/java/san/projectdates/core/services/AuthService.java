@@ -29,10 +29,7 @@ public class AuthService {
     String access_token = jwtService.createToken(fullEntity);
 
     return new AuthResponse(
-      fullEntity.getId(),
-      fullEntity.getUsername(),
-      fullEntity.getEmail(),
-      fullEntity.getRole(),
+      fullEntity,
       access_token
     );
   }
