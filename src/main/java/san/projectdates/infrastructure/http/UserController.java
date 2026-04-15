@@ -1,5 +1,6 @@
 package san.projectdates.infrastructure.http;
 
+import san.projectdates.core.dtos.ApiResponse;
 import san.projectdates.core.dtos.UserCreateRequest;
 import san.projectdates.core.dtos.UserResponse;
 import san.projectdates.core.services.UserService;
@@ -25,7 +26,7 @@ public class UserController {
           data.lastname(),
           data.role());
 
-      ctx.status(201).json(savedUser);
+      ctx.status(201).json(ApiResponse.success(savedUser, "User creado con éxito"));
     } catch (Exception e) {
       ctx.status(400).result(e.getMessage());
     }
@@ -36,7 +37,7 @@ public class UserController {
       String email = ctx.queryParam("email");
       System.out.println(email);
       UserResponse userFinded = userService.findUserByEmail(email);
-      ctx.status(200).json(userFinded);
+      ctx.status(200).json(ApiResponse.success(userFinded, "User obtenido con éxito"));
     } catch (Exception e) {
       ctx.status(400).result(e.getMessage());
     }
@@ -48,7 +49,7 @@ public class UserController {
       UUID id = UUID.fromString(idParam);
       String deleteMessage = userService.deleteUserById(id);
 
-      ctx.status(200).result(deleteMessage);
+      ctx.status(200).json(ApiResponse.success(deleteMessage, "User eliminado con éxito"));
     } catch (Exception e) {
       ctx.status(400).result(e.getMessage());
     }
@@ -57,7 +58,7 @@ public class UserController {
   public void findAll(Context ctx){
     try {
       List<UserResponse> getAllUsers = userService.findAllUsers();
-      ctx.status(200).json(getAllUsers);
+      ctx.status(200).json(ApiResponse.success(getAllUsers, "Users obtenidos con éxito"));
     } catch (Exception e) {
       ctx.status(400).result(e.getMessage());
     }
