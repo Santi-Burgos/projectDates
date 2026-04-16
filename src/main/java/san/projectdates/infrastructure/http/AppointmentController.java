@@ -1,5 +1,6 @@
 package san.projectdates.infrastructure.http;
 
+import java.util.List;
 import java.util.UUID;
 
 import io.javalin.http.Context;
@@ -23,8 +24,17 @@ public class AppointmentController {
       UUID userId = ctx.attribute("currentUserId");
       AppointmentResponse appointmentRes = appointmentService.createReservation(appointmenReq, userId);
         
-      ctx.status(200).json(ApiResponse.success(appointmentRes, "Reservación creada con exito"));
+      ctx.status(201).json(ApiResponse.success(appointmentRes, "Reservación creada con exito"));
     }catch(Exception e){
+      ctx.status(500).result(e.getMessage());
+    }
+  }
+
+  public void getAllAppointments(Context ctx){
+    try {
+      List<AppointmentResponse> appointments = appointmentService.getAllReservations();
+      ctx.status(200).json(ApiResponse.success(appointments, "Reservas obtenido con exito"));
+    } catch (Exception e) {
       ctx.status(500).result(e.getMessage());
     }
   }

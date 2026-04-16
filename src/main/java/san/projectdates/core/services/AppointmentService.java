@@ -63,6 +63,13 @@ public class AppointmentService {
     }
   }
 
+  public List<AppointmentResponse> getAllReservations(){
+    List<Appointment> appointmentsList = appointmentRepository.getAllAppointments(); 
+    return appointmentsList.stream()
+      .map(appointment -> new AppointmentResponse(appointment))
+      .toList();
+  }
+
   public boolean validateReservation(Appointment appointmentData){
     Concept conceptDetails = conceptRepository.findConceptById(appointmentData.getConceptId());
     if(!conceptDetails.getIs24h()){

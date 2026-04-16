@@ -4,7 +4,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import san.projectdates.core.entities.Appointment;
@@ -83,6 +86,37 @@ public class SqlAppointmentRepository implements AppointmentRepository{
       return null;
     }catch(SQLException e){
       throw new RuntimeException("Error al buscar la reserva por día: " + e.getMessage());
+    }
+  }
+
+  @Override 
+  public List<Appointment> getAllAppointments(){
+    String queryFindAppointments = """
+      SELECT * FROM appointments    
+    """;
+    List<Appointment> appoinnments = new ArrayList<>();
+    try(
+      Connection conn = DbConfig.getConnection();
+      PreparedStatement pstmt = conn.prepareStatement(queryFindAppointments);
+      ResultSet rs = pstmt.executeQuery();
+    ){
+      while (rs.next()){
+        UUID id = rs.getObject("appointments_id", UUID.class);
+        UUID conceptId = rs.getObject("concept_id", UUID.class);
+        UUID userId =  rs.getObject("user_id", UUID.class);
+        String startAt =  rs.getTime("start_at").toString();
+        String endAt = rs.getTime("end_at").toString();
+        LocalDateTime createdAt = rs.getObject("created_at", OffsetDateTime.class).toLocalDateTime();
+        String appointmentsDay = rs.getDate("appointments_day").toString();
+        
+        Appointment appoinnment = new Appointment(id, conceptId, userId, startAt, endAt, createdAt, appointmentsDay); 
+      
+        appoinnments.add(appoinnment);
+      }
+
+      return appoinnments;
+    }catch(Exception e){
+      throw new RuntimeException("Error al buscar todas las reservas: " + e.getMessage());
     }
   }
 

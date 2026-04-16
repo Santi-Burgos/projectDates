@@ -59,6 +59,7 @@ public class AppRouter {
 
       path("/api/reservation", () -> {
         post(appointmentController::createReservation);
+        get(appointmentController::getAllAppointments);
       });
     });
   }
