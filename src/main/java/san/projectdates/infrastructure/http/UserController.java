@@ -17,50 +17,34 @@ public class UserController {
   }
 
   public void create(Context ctx) {
-    try {
-      UserCreateRequest data = ctx.bodyAsClass(UserCreateRequest.class);
-      UserResponse savedUser = userService.createNewUser(
-          data.username(),
-          data.email(),
-          data.password(),
-          data.lastname(),
-          data.role());
+    UserCreateRequest data = ctx.bodyAsClass(UserCreateRequest.class);
+    UserResponse savedUser = userService.createNewUser(
+      data.username(),
+      data.email(),
+      data.password(),
+      data.lastname(),
+      data.role()
+    );
 
-      ctx.status(201).json(ApiResponse.success(savedUser, "User creado con éxito"));
-    } catch (Exception e) {
-      ctx.status(400).result(e.getMessage());
-    }
+    ctx.status(201).json(ApiResponse.success(savedUser, "User creado con éxito"));
   }
 
   public void findOne(Context ctx) {
-    try {
-      String email = ctx.queryParam("email");
-      System.out.println(email);
-      UserResponse userFinded = userService.findUserByEmail(email);
-      ctx.status(200).json(ApiResponse.success(userFinded, "User obtenido con éxito"));
-    } catch (Exception e) {
-      ctx.status(400).result(e.getMessage());
-    }
+    String email = ctx.queryParam("email");
+    UserResponse userFinded = userService.findUserByEmail(email);
+    ctx.status(200).json(ApiResponse.success(userFinded, "User obtenido con éxito"));
   }
 
   public void delete(Context ctx) {
-    try {
-      String idParam = ctx.pathParam("id");
-      UUID id = UUID.fromString(idParam);
-      String deleteMessage = userService.deleteUserById(id);
-
-      ctx.status(200).json(ApiResponse.success(deleteMessage, "User eliminado con éxito"));
-    } catch (Exception e) {
-      ctx.status(400).result(e.getMessage());
-    }
+    String idParam = ctx.pathParam("id");
+    UUID id = UUID.fromString(idParam);
+    String deleteMessage = userService.deleteUserById(id);
+    
+    ctx.status(200).json(ApiResponse.success(deleteMessage, "User eliminado con éxito"));
   }
 
   public void findAll(Context ctx){
-    try {
-      List<UserResponse> getAllUsers = userService.findAllUsers();
-      ctx.status(200).json(ApiResponse.success(getAllUsers, "Users obtenidos con éxito"));
-    } catch (Exception e) {
-      ctx.status(400).result(e.getMessage());
-    }
+    List<UserResponse> getAllUsers = userService.findAllUsers();
+    ctx.status(200).json(ApiResponse.success(getAllUsers, "Users obtenidos con éxito"));
   }
 }

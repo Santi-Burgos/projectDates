@@ -1,13 +1,16 @@
 package san.projectdates.core.services;
 
 import org.junit.jupiter.api.Test;
+import org.flywaydb.core.internal.jdbc.ErrorImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 
 import san.projectdates.core.dtos.UserResponse;
 import san.projectdates.core.entities.Role;
 import san.projectdates.core.entities.User;
+import san.projectdates.core.repositories.ErrorFactory;
 import san.projectdates.core.repositories.UserRepository;
+import san.projectdates.infrastructure.factories.ErrorFactoryImpl;
 
 import java.util.UUID;
 import java.util.List;
@@ -42,7 +45,9 @@ class UserServicesTest {
       @Override public List<User> findAllUsers() { return new ArrayList<>(); }
     };
 
-    this.userService = new UserService(mockRepository);
+    ErrorFactoryImpl errorFactoryImpl = new ErrorFactoryImpl();
+
+    this.userService = new UserService(mockRepository, errorFactoryImpl);
   }
 
   @Test

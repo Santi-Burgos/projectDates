@@ -14,12 +14,8 @@ public class AuthController {
   }
 
   public void login(Context ctx){
-    try{
-      AuthRequest authRequest= ctx.bodyAsClass(AuthRequest.class); 
-      AuthResponse authResponse = authService.login(authRequest);
-      ctx.status(200).json(ApiResponse.success(authResponse, "Login exitoso"));
-    }catch(Exception e){
-      ctx.status(500).result(e.getMessage());
-    }
+    AuthRequest authRequest= ctx.bodyAsClass(AuthRequest.class); 
+    AuthResponse authResponse = authService.login(authRequest);
+    ctx.status(200).json(ApiResponse.success(authResponse, "Login exitoso"));
   }
 }

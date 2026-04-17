@@ -19,23 +19,15 @@ public class AppointmentController {
   }
 
   public void createReservation(Context ctx){
-    try{
-      AppointmentRequest appointmenReq = ctx.bodyAsClass(AppointmentRequest.class);
-      UUID userId = ctx.attribute("currentUserId");
-      AppointmentResponse appointmentRes = appointmentService.createReservation(appointmenReq, userId);
+    AppointmentRequest appointmenReq = ctx.bodyAsClass(AppointmentRequest.class);
+    UUID userId = ctx.attribute("currentUserId");
+    AppointmentResponse appointmentRes = appointmentService.createReservation(appointmenReq, userId);
         
-      ctx.status(201).json(ApiResponse.success(appointmentRes, "Reservación creada con exito"));
-    }catch(Exception e){
-      ctx.status(500).result(e.getMessage());
-    }
+    ctx.status(201).json(ApiResponse.success(appointmentRes, "Reservación creada con exito"));
   }
 
   public void getAllAppointments(Context ctx){
-    try {
-      List<AppointmentResponse> appointments = appointmentService.getAllReservations();
-      ctx.status(200).json(ApiResponse.success(appointments, "Reservas obtenido con exito"));
-    } catch (Exception e) {
-      ctx.status(500).result(e.getMessage());
-    }
+    List<AppointmentResponse> appointments = appointmentService.getAllReservations();
+    ctx.status(200).json(ApiResponse.success(appointments, "Reservas obtenido con exito"));
   }
 }

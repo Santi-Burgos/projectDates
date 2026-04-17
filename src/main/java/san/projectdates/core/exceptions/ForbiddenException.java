@@ -1,0 +1,7 @@
+package san.projectdates.core.exceptions;
+
+public class ForbiddenException extends DomainException {
+  public ForbiddenException(String message) {
+    super(message, 403);
+  }
+}

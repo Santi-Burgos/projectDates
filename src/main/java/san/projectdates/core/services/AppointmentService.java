@@ -12,19 +12,22 @@ import san.projectdates.core.entities.Appointment;
 import san.projectdates.core.entities.Concept;
 import san.projectdates.core.entities.TimeRange;
 import san.projectdates.core.repositories.AppointmentRepository;
-import san.projectdates.core.repositories.ConceptRepository; 
+import san.projectdates.core.repositories.ConceptRepository;
+import san.projectdates.core.repositories.ErrorFactory; 
 
 public class AppointmentService {
   private final AppointmentRepository appointmentRepository;
   private final ConceptRepository conceptRepository;
-
+  private final ErrorFactory error;
 
   public AppointmentService(
     AppointmentRepository appointmentRepository,
-    ConceptRepository conceptRepository
+    ConceptRepository conceptRepository,
+    ErrorFactory errorFactory
   ){
     this.appointmentRepository = appointmentRepository;
     this.conceptRepository = conceptRepository;
+    this.error = errorFactory;
   }
 
   public AppointmentResponse createReservation(AppointmentRequest appointmentData, UUID userId){
@@ -36,7 +39,7 @@ public class AppointmentService {
       String result = jedis.set(lockKey, lockValue, new SetParams().nx().ex(expireTimeSeconds));
 
       if(!"OK".equals(result)){
-        throw new RuntimeException("Error al obtener el lock");
+        throw error.badRequest("Error al obtener el lock");
       }
 
       Appointment appointmentFull = new Appointment(
@@ -53,7 +56,7 @@ public class AppointmentService {
 
           return new AppointmentResponse(appointmentFull);
         }else{
-          throw new RuntimeException("Ya hay una reserva con estas caracteristicas");
+          throw error.unauthorized("Ya hay una reserva con estas caracteristicas");
         }
       }finally{
         jedis.del(lockKey);
