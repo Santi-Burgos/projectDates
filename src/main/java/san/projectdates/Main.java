@@ -11,14 +11,18 @@ import san.projectdates.infrastructure.persistence.DbConfig;
 import san.projectdates.infrastructure.persistence.SqlAppointmentRepository;
 import san.projectdates.infrastructure.persistence.SqlConceptRepository;
 import san.projectdates.infrastructure.persistence.SqlUserRepository;
+import san.projectdates.infrastructure.persistence.SqlPermissionsRepository;
 import san.projectdates.infrastructure.router.AppRouter;
+import san.projectdates.core.repositories.PermissionsRepository;
 import san.projectdates.core.services.AppointmentService;
 import san.projectdates.core.services.AuthService;
 import san.projectdates.core.services.ConceptService;
+import san.projectdates.core.services.PermissionsService;
 import san.projectdates.infrastructure.security.JwtService;
 import san.projectdates.core.exceptions.DomainException;
 import san.projectdates.infrastructure.factories.ErrorFactoryImpl;
 import san.projectdates.infrastructure.http.middleware.GlobalExceptionHandler;
+import san.projectdates.infrastructure.http.middleware.PermissionsMiddleware;
 
 public class Main {
   public static void main(String[] args) {
@@ -41,12 +45,17 @@ public class Main {
     AuthService authService = new AuthService(userService, jwtService);
     AppointmentService appointmentService = new AppointmentService(appointmentRepo, conceptRepo, errorFactory);
 
+    PermissionsRepository permissionsRepo = new SqlPermissionsRepository();
+    PermissionsService permissionsService = new PermissionsService(permissionsRepo);
+    PermissionsMiddleware permissionsMiddleware = new PermissionsMiddleware(permissionsService);
+
     AppRouter router = new AppRouter(
       userService, 
       authService, 
       conceptService, 
       jwtService,
-      appointmentService
+      appointmentService,
+      permissionsMiddleware
     );
 
     var app = Javalin.create(config -> {
