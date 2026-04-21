@@ -34,10 +34,10 @@ public class Main {
     flyway.migrate();
     System.out.println("Migracion concluida");
 
+    ErrorFactoryImpl errorFactory = new ErrorFactoryImpl();
     UserRepository repo = new SqlUserRepository();
     ConceptRepository conceptRepo = new SqlConceptRepository();
-    AppointmentRepository appointmentRepo = new SqlAppointmentRepository();
-    ErrorFactoryImpl errorFactory = new ErrorFactoryImpl();
+    AppointmentRepository appointmentRepo = new SqlAppointmentRepository(errorFactory);
 
     JwtService jwtService = new JwtService();
     ConceptService conceptService = new ConceptService(conceptRepo);

@@ -28,19 +28,33 @@ class UserServicesTest {
 
       @Override
       public Boolean emailIsAlreadyUse(String email) {
+        return email.equals("existing@example.com");
+      }
+
+      @Override
+      public Boolean validateUserExist(UUID id) {
         return false;
       }
 
-      @Override public Boolean validateUserExist(UUID id) { return true; }
-      @Override public int deleteUserById(UUID id) { return 1; }
-      @Override public User getUserByEmail(String email) { return new User(
-        "Santi", 
-        email, 
-        "password123", 
-        "La Pampa", 
-        Role.USER
-      );}
-      @Override public List<User> findAllUsers() { return new ArrayList<>(); }
+      @Override
+      public int deleteUserById(UUID id) {
+        return 1;
+      }
+
+      @Override
+      public User getUserByEmail(String email) {
+        return new User(
+            "ExistingUser",
+            email,
+            "password123",
+            "Lastname",
+            Role.USER);
+      }
+
+      @Override
+      public List<User> findAllUsers() {
+        return new ArrayList<>();
+      }
     };
 
     ErrorFactoryImpl errorFactoryImpl = new ErrorFactoryImpl();
@@ -51,12 +65,11 @@ class UserServicesTest {
   @Test
   public void shouldCreateNewUserSuccessfully() {
     UserResponse result = userService.createNewUser(
-      "Santi",
-      "santi@example.com",
-      "password123",
-      "Burgos",
-      Role.USER
-    );
+        "Santi",
+        "santi@example.com",
+        "password123",
+        "Burgos",
+        Role.USER);
 
     Assertions.assertNotNull(result, "El objeto UserResponse no debería ser nulo");
     Assertions.assertEquals("santi@example.com", result.email(), "El email devuelto debe coincidir");
@@ -64,8 +77,8 @@ class UserServicesTest {
   }
 
   @Test
-  public void shouldGetUserByEmail(){
-    String emailFind = "santi@example.com";
+  public void shouldGetUserByEmail() {
+    String emailFind = "existing@example.com";
     UserResponse result = userService.findUserByEmail(emailFind);
 
     Assertions.assertNotNull(result, "El objeto UserResponse no debería ser nulo");
@@ -73,13 +86,25 @@ class UserServicesTest {
   }
 
   @Test
-  public void shoulThhrowExceptionWhenEmailDoesNotExist(){
+  public void shouldThrowExceptionWhenEmailDoesNotExist() {
     String emailfind = "no-existing@example.com";
-    
-    RuntimeException exception = Assertions.assertThrows(RuntimeException.class, 
-      () -> { userService.findUserByEmail(emailfind);       
-    });
-    
+
+    RuntimeException exception = Assertions.assertThrows(RuntimeException.class,
+        () -> {
+          userService.findUserByEmail(emailfind);
+        });
+
     Assertions.assertEquals("El usuario con este email no existe", exception.getMessage());
+  }
+
+  @Test
+  public void deleteUserThrowException() {
+    UUID id = UUID.randomUUID();
+    RuntimeException exception = Assertions.assertThrows(RuntimeException.class,
+        () -> {
+          userService.deleteUserById(id);
+        });
+    System.out.println("Exception captured: " + exception.getMessage());
+    Assertions.assertEquals("El usuario no existe", exception.getMessage());
   }
 }

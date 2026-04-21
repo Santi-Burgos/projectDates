@@ -9,6 +9,8 @@ import java.util.UUID;
 public interface AppointmentRepository {
   Appointment saveReservation(Appointment saveAppointment);
 
+  Appointment updateAppointment(Appointment updateAppointment);
+
   Appointment findReservationByDate(Appointment appointmentData);
 
   void cancelReservation(UUID appointmentId);

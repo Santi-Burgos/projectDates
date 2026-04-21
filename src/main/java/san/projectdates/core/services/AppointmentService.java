@@ -73,6 +73,42 @@ public class AppointmentService {
       .toList();
   }
 
+    public AppointmentResponse updateReservation(AppointmentRequest appointmentData, UUID userId){
+    String lockKey = "lock:reservation:" + appointmentData.conceptId() + ":" + appointmentData.startAt() + ":" + appointmentData.endAt();
+    String lockValue = UUID.randomUUID().toString(); 
+    int expireTimeSeconds = 5;
+    try(Jedis jedis = RedisPool.getResource()){
+      String result = jedis.set(lockKey, lockValue, new SetParams().nx().ex(expireTimeSeconds));
+
+      if(!"OK".equals(result)){
+        throw error.badRequest("Error al obtener el lock");
+      }
+
+      Appointment appointmentFull = new Appointment(
+        appointmentData.conceptId(),
+        userId,
+        appointmentData.startAt(),
+        appointmentData.endAt(),
+        appointmentData.appointmentDay()
+      );
+
+      try{
+        if(this.validateReservation(appointmentFull)){
+          appointmentRepository.updateAppointment(appointmentFull);
+
+          return new AppointmentResponse(appointmentFull);
+        }else{
+          throw error.unauthorized("Ya hay una reserva con estas caracteristicas");
+        }
+      }finally{
+        jedis.del(lockKey);
+      }
+    }catch(Exception e){
+      throw new RuntimeException("Error de redis:  " + e.getMessage());
+    }
+  }
+
+
   public boolean validateReservation(Appointment appointmentData){
     Concept conceptDetails = conceptRepository.findConceptById(appointmentData.getConceptId());
     if(!conceptDetails.getIs24h()){
@@ -89,6 +125,8 @@ public class AppointmentService {
     }
     return false;
   }
+
+
 
   static Boolean fnValidateHours(Concept concept, Appointment appointmentRequest){
     List<TimeRange> disponivelHours = concept.getSchedule();

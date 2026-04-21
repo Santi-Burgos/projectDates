@@ -30,4 +30,11 @@ public class AppointmentController {
     List<AppointmentResponse> appointments = appointmentService.getAllReservations();
     ctx.status(200).json(ApiResponse.success(appointments, "Reservas obtenido con exito"));
   }
+
+  public void updateAppointments(Context ctx){
+    AppointmentRequest appointmentReq = ctx.bodyAsClass(AppointmentRequest.class);
+    UUID userId = ctx.attribute("currentUserId");
+    AppointmentResponse result = appointmentService.updateReservation(appointmentReq, userId);
+    ctx.status(200).json(ApiResponse.success(result, "Reserva actualizada con exito"));
+  }
 }
