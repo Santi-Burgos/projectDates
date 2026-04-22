@@ -15,10 +15,10 @@ import san.projectdates.core.repositories.AppointmentRepository;
 import san.projectdates.core.repositories.ErrorFactory;
 
 public class SqlAppointmentRepository implements AppointmentRepository {
-  private final ErrorFactory error;
+  private final ErrorFactory errorFactory;
 
-  public SqlAppointmentRepository(ErrorFactory error) {
-    this.error = error;
+  public SqlAppointmentRepository(ErrorFactory errorFactory) {
+    this.errorFactory = errorFactory;
   }
 
   @Override
@@ -54,7 +54,7 @@ public class SqlAppointmentRepository implements AppointmentRepository {
 
       return null;
     } catch (SQLException e) {
-      throw new RuntimeException("Error al crear la resevar: " + e.getMessage());
+      throw errorFactory.databaseError("Error al crear la reserva: " + e.getMessage());
     }
   }
 
@@ -95,8 +95,8 @@ public class SqlAppointmentRepository implements AppointmentRepository {
         );
       }
       return null;
-    }catch(Exception e){
-      throw this.error.internalServerError("Error al crear la reserva: " + e.getMessage());
+    } catch (Exception e) {
+      throw errorFactory.databaseError("Error al actualizar la reserva: " + e.getMessage());
     }
   }
 
@@ -129,7 +129,7 @@ public class SqlAppointmentRepository implements AppointmentRepository {
       }
       return null;
     } catch (SQLException e) {
-      throw new RuntimeException("Error al buscar la reserva por día: " + e.getMessage());
+      throw errorFactory.databaseError("Error al buscar la reserva por día: " + e.getMessage());
     }
   }
 
@@ -159,7 +159,7 @@ public class SqlAppointmentRepository implements AppointmentRepository {
 
       return appoinnments;
     } catch (Exception e) {
-      throw new RuntimeException("Error al buscar todas las reservas: " + e.getMessage());
+      throw errorFactory.databaseError("Error al buscar todas las reservas: " + e.getMessage());
     }
   }
 

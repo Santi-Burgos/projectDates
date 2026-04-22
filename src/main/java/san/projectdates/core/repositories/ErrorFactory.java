@@ -14,4 +14,6 @@ public interface ErrorFactory {
   DomainException notFound(String message);
 
   DomainException conflict(String message);
+
+  DomainException databaseError(String message);
 }

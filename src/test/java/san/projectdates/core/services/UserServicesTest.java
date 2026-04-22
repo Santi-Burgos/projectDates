@@ -58,7 +58,6 @@ class UserServicesTest {
     };
 
     ErrorFactoryImpl errorFactoryImpl = new ErrorFactoryImpl();
-
     this.userService = new UserService(mockRepository, errorFactoryImpl);
   }
 

@@ -10,10 +10,18 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import san.projectdates.core.repositories.ErrorFactory;
+
 public class SqlPermissionsRepository implements PermissionsRepository {
+  private final ErrorFactory errorFactory;
+
+  public SqlPermissionsRepository(ErrorFactory errorFactory) {
+    this.errorFactory = errorFactory;
+  }
 
   @Override
   public List<Permissions> findAllPermissionsByRole(int role) {
+
     String query = """
           SELECT p.permission_id, p.permission_name
           FROM permission p
@@ -33,7 +41,7 @@ public class SqlPermissionsRepository implements PermissionsRepository {
         }
       }
     } catch (SQLException e) {
-      throw new RuntimeException("Error al obtener los permisos del rol en la DB: " + e.getMessage());
+      throw errorFactory.databaseError("Error al obtener los permisos del rol en la DB: " + e.getMessage());
     }
     return permissions;
   }

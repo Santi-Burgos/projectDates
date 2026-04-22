@@ -7,12 +7,15 @@ import san.projectdates.core.dtos.ConceptRequest;
 import san.projectdates.core.dtos.ConceptResponse;
 import san.projectdates.core.entities.Concept;
 import san.projectdates.core.repositories.ConceptRepository;
+import san.projectdates.core.repositories.ErrorFactory;
 
 public class ConceptService {
   private final ConceptRepository conceptRepository;
+  private final ErrorFactory errorFactory;
 
-  public ConceptService(ConceptRepository conceptRepository) {
+  public ConceptService(ConceptRepository conceptRepository, ErrorFactory errorFactory) {
     this.conceptRepository = conceptRepository;
+    this.errorFactory = errorFactory;
   }
 
   public ConceptResponse createConcept(ConceptRequest conceptInfo) {
@@ -52,7 +55,7 @@ public class ConceptService {
   public String deleteConcept(UUID conceptId) {
     int deletedConcept = conceptRepository.deleteConcept(conceptId);
     if (deletedConcept == 0) {
-      throw new RuntimeException("No se ha eliminado ningun usuario");
+      throw errorFactory.badRequest("No se ha eliminado ningun usuario");
     }
     String response = "Filas eliminadas: " + deletedConcept + " Usuario eliminado con exito";
     return response;
@@ -61,7 +64,7 @@ public class ConceptService {
   public ConceptResponse updateConcept(ConceptRequest newConceptToEdit, UUID conceptId) {
     Concept existingConcept = conceptRepository.findConceptById(conceptId);
     if (existingConcept == null) {
-      throw new RuntimeException("Concepto no encontrado con ID: " + conceptId);
+      throw  errorFactory.notFound("Concepto no encontrado con ID: " + conceptId);
     }
 
     existingConcept.merge(newConceptToEdit);

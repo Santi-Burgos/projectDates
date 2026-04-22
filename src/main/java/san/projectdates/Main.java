@@ -35,17 +35,17 @@ public class Main {
     System.out.println("Migracion concluida");
 
     ErrorFactoryImpl errorFactory = new ErrorFactoryImpl();
-    UserRepository repo = new SqlUserRepository();
-    ConceptRepository conceptRepo = new SqlConceptRepository();
+    UserRepository repo = new SqlUserRepository(errorFactory);
+    ConceptRepository conceptRepo = new SqlConceptRepository(errorFactory);
     AppointmentRepository appointmentRepo = new SqlAppointmentRepository(errorFactory);
 
     JwtService jwtService = new JwtService();
-    ConceptService conceptService = new ConceptService(conceptRepo);
+    ConceptService conceptService = new ConceptService(conceptRepo, errorFactory);
     UserService userService = new UserService(repo, errorFactory);
-    AuthService authService = new AuthService(userService, jwtService);
+    AuthService authService = new AuthService(userService, jwtService, errorFactory);
     AppointmentService appointmentService = new AppointmentService(appointmentRepo, conceptRepo, errorFactory);
 
-    PermissionsRepository permissionsRepo = new SqlPermissionsRepository();
+    PermissionsRepository permissionsRepo = new SqlPermissionsRepository(errorFactory);
     PermissionsService permissionsService = new PermissionsService(permissionsRepo);
     PermissionsMiddleware permissionsMiddleware = new PermissionsMiddleware(permissionsService);
 

@@ -33,4 +33,10 @@ public class ErrorFactoryImpl implements ErrorFactory{
   public DomainException conflict(String message) {
     return new ConflictException(message);
   }
+
+  @Override
+  public DomainException databaseError(String message) {
+    return new DatabaseException(message);
+  }
 }
+

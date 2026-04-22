@@ -16,19 +16,26 @@ import java.sql.Time;
 
 import san.projectdates.core.entities.Concept;
 import san.projectdates.core.entities.TimeRange;
+import san.projectdates.core.repositories.ErrorFactory;
+
 
 public class SqlConceptRepository implements ConceptRepository {
+  private final ErrorFactory errorFactory;
+
+  public SqlConceptRepository(ErrorFactory errorFactory){
+    this.errorFactory = errorFactory;
+  }
 
   @Override
-  public Concept saveConcept(Concept concept) {
-    if (concept.getIs24h()) {
+  public Concept saveConcept(Concept concept){
+    if (concept.getIs24h()){
       return this.executeSave24h(concept);
-    } else {
+    }else{
       return this.executeSaveLimited(concept);
     }
   }
 
-  public Concept executeSave24h(Concept newConcept) {
+  public Concept executeSave24h(Concept newConcept){
     String saveConcept = """
           INSERT INTO concept(concept_id, name, details, capacity, is_active, is_24h)
           VALUES(?, ?, ?, ?, ?, ?)
@@ -60,8 +67,7 @@ public class SqlConceptRepository implements ConceptRepository {
 
       return null;
     } catch (SQLException e) {
-      System.out.println(e.getMessage());
-      throw new RuntimeException("Error al guardar el concepto: " + e.getMessage());
+      throw errorFactory.databaseError("Error al guardar el concepto: " + e.getMessage());
     }
   }
 
@@ -114,8 +120,7 @@ public class SqlConceptRepository implements ConceptRepository {
           throw new RuntimeException("Error al hacer rollback: " + ex.getMessage());
         }
       }
-      System.out.println(e.getMessage());
-      throw new RuntimeException("Error al guardar el concepto: " + e.getMessage());
+      throw errorFactory.databaseError("Error al guardar el concepto: " + e.getMessage());
     } finally {
       if (conn != null) {
         try {
@@ -142,7 +147,7 @@ public class SqlConceptRepository implements ConceptRepository {
       int affectedRows = pstmt.executeUpdate();
       return affectedRows;
     } catch (SQLException e) {
-      throw new RuntimeException("Error al eliminar de la base de datos: " + e.getMessage());
+      throw errorFactory.databaseError("Error al eliminar de la base de datos: " + e.getMessage());
     }
   }
 
@@ -205,7 +210,7 @@ public class SqlConceptRepository implements ConceptRepository {
 
       return new ArrayList<>(conceptMap.values());
     } catch (SQLException e) {
-      throw new RuntimeException("Error al obtener de la base de datos: " + e.getMessage());
+      throw errorFactory.databaseError("Error al obtener de la base de datos: " + e.getMessage());
     }
   }
 
@@ -261,7 +266,7 @@ public class SqlConceptRepository implements ConceptRepository {
 
       return concept;
     } catch (SQLException e) {
-      throw new RuntimeException("Error al obtener el concepto por id: " + e.getMessage());
+      throw errorFactory.databaseError("Error al obtener el concepto por id: " + e.getMessage());
     }
   }
 
@@ -318,7 +323,7 @@ public class SqlConceptRepository implements ConceptRepository {
           throw new RuntimeException("Error al hacer rollback: " + ex.getMessage());
         }
       }
-      throw new RuntimeException("Error al actualizar el concepto: " + e.getMessage());
+      throw errorFactory.databaseError("Error al actualizar el concepto: " + e.getMessage());
     } finally {
       if (conn != null) {
         try {

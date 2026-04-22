@@ -10,11 +10,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import san.projectdates.core.entities.User;
-import san.projectdates.core.repositories.UserRepository;
 import san.projectdates.core.entities.Role;
+import san.projectdates.core.entities.User;
+import san.projectdates.core.repositories.ErrorFactory;
+import san.projectdates.core.repositories.UserRepository;
 
 public class SqlUserRepository implements UserRepository {
+  private final ErrorFactory errorFactory;
+
+  public SqlUserRepository(ErrorFactory errorFactory) {
+    this.errorFactory = errorFactory;
+  }
 
   @Override
   public User saveUser(User user){
@@ -51,11 +57,14 @@ public class SqlUserRepository implements UserRepository {
         );
       }
       return null;
-    }catch(Exception e){
-      throw new RuntimeException("Error al guardar en la base de datos: " + e.getMessage());
+    } catch (SQLException e) {
+      if ("23505".equals(e.getSQLState())) {
+        throw errorFactory.conflict("El email ya está en uso");
+      }
+      throw errorFactory.databaseError("Error al guardar en la base de datos: " + e.getMessage());
     }
   }
-  
+
   @Override
   public Boolean emailIsAlreadyUse(String email){
     String queryFindEmail = """
@@ -73,9 +82,10 @@ public class SqlUserRepository implements UserRepository {
         return rs.getBoolean(1);
       }
       return false;
-    }catch(SQLException e){
-      throw new RuntimeException("Error al buscar en la base de datos: " + e.getMessage());
+    } catch (SQLException e) {
+      throw errorFactory.databaseError("Error al buscar en la base de datos: " + e.getMessage());
     }
+
   }
 
   @Override
@@ -90,15 +100,14 @@ public class SqlUserRepository implements UserRepository {
     ){
       pstmt.setObject(1, id);
       ResultSet rs = pstmt.executeQuery();
-      if(rs.next()){
+      if (rs.next()) {
         return rs.getBoolean(1);
       }
       return false;
     }catch(SQLException e){
-      throw new RuntimeException("Error al buscar en la base de datos");
+      throw errorFactory.databaseError("Error al buscar en la base de datos: " + e.getMessage());
     }
   }
-
 
   @Override
   public int deleteUserById(UUID id){
@@ -111,12 +120,12 @@ public class SqlUserRepository implements UserRepository {
       PreparedStatement pstmt = conn.prepareStatement(queryDeleteUser);
     ){
       pstmt.setObject(1, id);
-      
+
       int affectedRows = pstmt.executeUpdate();
 
       return affectedRows;
-    }catch(SQLException e){
-      throw new RuntimeException("Error al buscar en la base de datos: " + e.getMessage());
+    } catch(SQLException e){
+      throw errorFactory.databaseError("Error al buscar en la base de datos: " + e.getMessage());
     }
   }
 
@@ -144,10 +153,11 @@ public class SqlUserRepository implements UserRepository {
           rs.getObject("created_at", OffsetDateTime.class)
         );
       }
-    return null;
-    }catch(SQLException e){
-      throw new RuntimeException("Error al buscar en la base de datos: " + e.getMessage());
+      return null;
+    }catch (SQLException e){
+      throw errorFactory.databaseError("Error al buscar en la base de datos: " + e.getMessage());
     }
+
   }
 
   @Override
@@ -178,7 +188,7 @@ public class SqlUserRepository implements UserRepository {
       
       return users;
     } catch (SQLException e) {
-      throw new RuntimeException("Error al buscar los usuarios en la base de datos: " + e.getMessage());
+      throw errorFactory.databaseError("Error al buscar los usuarios en la base de datos: " + e.getMessage());
     }
   }
 }
