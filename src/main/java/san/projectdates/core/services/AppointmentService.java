@@ -13,7 +13,7 @@ import san.projectdates.core.entities.Concept;
 import san.projectdates.core.entities.TimeRange;
 import san.projectdates.core.repositories.AppointmentRepository;
 import san.projectdates.core.repositories.ConceptRepository;
-import san.projectdates.core.repositories.ErrorFactory; 
+import san.projectdates.core.repositories.ErrorFactory;
 
 public class AppointmentService {
   private final AppointmentRepository appointmentRepository;
@@ -21,118 +21,116 @@ public class AppointmentService {
   private final ErrorFactory error;
 
   public AppointmentService(
-    AppointmentRepository appointmentRepository,
-    ConceptRepository conceptRepository,
-    ErrorFactory errorFactory
-  ){
+      AppointmentRepository appointmentRepository,
+      ConceptRepository conceptRepository,
+      ErrorFactory errorFactory) {
     this.appointmentRepository = appointmentRepository;
     this.conceptRepository = conceptRepository;
     this.error = errorFactory;
   }
 
-  public AppointmentResponse createReservation(AppointmentRequest appointmentData, UUID userId){
-    String lockKey = "lock:reservation:" + appointmentData.conceptId() + ":" + appointmentData.startAt() + ":" + appointmentData.endAt();
+  public AppointmentResponse createReservation(AppointmentRequest appointmentData, UUID userId) {
+    String lockKey = "lock:reservation:" + appointmentData.conceptId() + ":" + appointmentData.startAt() + ":"
+        + appointmentData.endAt();
     String lockValue = UUID.randomUUID().toString();
     int expireTimeSeconds = 5;
-    
-    try(Jedis jedis = RedisPool.getResource()){
+
+    try (Jedis jedis = RedisPool.getResource()) {
       String result = jedis.set(lockKey, lockValue, new SetParams().nx().ex(expireTimeSeconds));
 
-      if(!"OK".equals(result)){
-        throw error.badRequest("Error al obtener el lock");
+      if (!"OK".equals(result)) {
+        throw error.conflict("Ya hay una reserva con estas caracteristicas");
       }
 
       Appointment appointmentFull = new Appointment(
-        appointmentData.conceptId(),
-        userId,
-        appointmentData.startAt(),
-        appointmentData.endAt(),
-        appointmentData.appointmentDay()
-      );
+          appointmentData.conceptId(),
+          userId,
+          appointmentData.startAt(),
+          appointmentData.endAt(),
+          appointmentData.appointmentDay());
 
-      try{
-        if(this.validateReservation(appointmentFull)){
+      try {
+        if (this.validateReservation(appointmentFull)) {
           appointmentRepository.saveReservation(appointmentFull);
 
           return new AppointmentResponse(appointmentFull);
-        }else{
-          throw error.unauthorized("Ya hay una reserva con estas caracteristicas");
+        } else {
+          throw error.conflict("Ya hay una reserva con estas caracteristicas");
         }
-      }finally{
+      } finally {
         jedis.del(lockKey);
       }
-    }catch(Exception e){
+    } catch (Exception e) {
       throw new RuntimeException("Error de redis:  " + e.getMessage());
     }
   }
 
-  public List<AppointmentResponse> getAllReservations(){
-    List<Appointment> appointmentsList = appointmentRepository.getAllAppointments(); 
+  public List<AppointmentResponse> getAllReservations() {
+    List<Appointment> appointmentsList = appointmentRepository.getAllAppointments();
     return appointmentsList.stream()
-      .map(appointment -> new AppointmentResponse(appointment))
-      .toList();
+        .map(appointment -> new AppointmentResponse(appointment))
+        .toList();
   }
 
-    public AppointmentResponse updateReservation(AppointmentRequest appointmentData, UUID userId){
-    String lockKey = "lock:reservation:" + appointmentData.conceptId() + ":" + appointmentData.startAt() + ":" + appointmentData.endAt();
-    String lockValue = UUID.randomUUID().toString(); 
+  public AppointmentResponse updateReservation(AppointmentRequest appointmentData, UUID userId) {
+    String lockKey = "lock:reservation:" + appointmentData.conceptId() + ":" + appointmentData.startAt() + ":"
+        + appointmentData.endAt();
+    String lockValue = UUID.randomUUID().toString();
     int expireTimeSeconds = 5;
-    try(Jedis jedis = RedisPool.getResource()){
+    try (Jedis jedis = RedisPool.getResource()) {
       String result = jedis.set(lockKey, lockValue, new SetParams().nx().ex(expireTimeSeconds));
 
-      if(!"OK".equals(result)){
-        throw error.badRequest("Error al obtener el lock");
+      if (!"OK".equals(result)) {
+        throw error.conflict("Ya hay una reserva con estas caracteristicas");
       }
 
       Appointment appointmentFull = new Appointment(
-        appointmentData.conceptId(),
-        userId,
-        appointmentData.startAt(),
-        appointmentData.endAt(),
-        appointmentData.appointmentDay()
-      );
+          appointmentData.conceptId(),
+          userId,
+          appointmentData.startAt(),
+          appointmentData.endAt(),
+          appointmentData.appointmentDay());
 
-      try{
-        if(this.validateReservation(appointmentFull)){
+      try {
+        if (this.validateReservation(appointmentFull)) {
           appointmentRepository.updateAppointment(appointmentFull);
 
           return new AppointmentResponse(appointmentFull);
-        }else{
-          throw error.unauthorized("Ya hay una reserva con estas caracteristicas");
+        } else {
+          throw error.conflict("Ya hay una reserva con estas caracteristicas");
         }
-      }finally{
+      } finally {
         jedis.del(lockKey);
       }
-    }catch(Exception e){
+    } catch (Exception e) {
       throw new RuntimeException("Error de redis:  " + e.getMessage());
     }
   }
 
-
-  public boolean validateReservation(Appointment appointmentData){
+  public boolean validateReservation(Appointment appointmentData) {
     Concept conceptDetails = conceptRepository.findConceptById(appointmentData.getConceptId());
-    if(!conceptDetails.getIs24h()){
-      if(!fnValidateHours(conceptDetails, appointmentData)){
+    if (!conceptDetails.getIs24h()) {
+      if (!fnValidateHours(conceptDetails, appointmentData)) {
         return false;
-      };
+      }
+      ;
     }
 
     Appointment hasReservation = appointmentRepository.findReservationByDate(appointmentData);
-    //falta una validacion para saber si no inicia pero si un bloque mio coincide con este
+    // falta una validacion para saber si no inicia pero si un bloque mio coincide
+    // con este
 
-    if(hasReservation == null){
-      return true; 
+    if (hasReservation == null) {
+      return true;
     }
     return false;
   }
 
-  static Boolean fnValidateHours(Concept concept, Appointment appointmentRequest){
+  static Boolean fnValidateHours(Concept concept, Appointment appointmentRequest) {
     List<TimeRange> disponivelHours = concept.getSchedule();
-    for(TimeRange range : disponivelHours){
-      if(
-        !range.openAsLocalTime().isAfter(appointmentRequest.startAtAsLocalTime()) 
-        && !range.closeAsLocalTime().isBefore(appointmentRequest.endAtAsLocalTime())
-      ){
+    for (TimeRange range : disponivelHours) {
+      if (!range.openAsLocalTime().isAfter(appointmentRequest.startAtAsLocalTime())
+          && !range.closeAsLocalTime().isBefore(appointmentRequest.endAtAsLocalTime())) {
         return true;
       }
     }
