@@ -15,5 +15,9 @@ public interface UserRepository {
 
   User getUserByEmail(String email);
 
+  User getUserById(UUID id);
+
+  User updateUser(User user);
+
   List<User> findAllUsers();
 }

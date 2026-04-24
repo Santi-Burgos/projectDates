@@ -39,12 +39,19 @@ public class UserController {
     String idParam = ctx.pathParam("id");
     UUID id = UUID.fromString(idParam);
     String deleteMessage = userService.deleteUserById(id);
-    
+
     ctx.status(200).json(ApiResponse.success(deleteMessage, "User eliminado con éxito"));
   }
 
   public void findAll(Context ctx){
     List<UserResponse> getAllUsers = userService.findAllUsers();
     ctx.status(200).json(ApiResponse.success(getAllUsers, "Users obtenidos con éxito"));
+  }
+
+  public void update(Context ctx){
+    UUID id = UUID.fromString(ctx.pathParam("id"));
+    UserCreateRequest updateRequest = ctx.bodyAsClass(UserCreateRequest.class);
+    UserResponse updatedUser = userService.updateUser(id, updateRequest);
+    ctx.status(200).json(ApiResponse.success(updatedUser, "User actualizado con éxito"));
   }
 }

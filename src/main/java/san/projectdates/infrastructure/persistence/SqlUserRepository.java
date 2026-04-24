@@ -161,6 +161,68 @@ public class SqlUserRepository implements UserRepository {
   }
 
   @Override
+  public User getUserById(UUID id){
+    String queryFindUserById = """
+      SELECT * FROM users 
+      WHERE user_id = ?
+    """;
+    try(
+      Connection conn = DbConfig.getConnection();
+      PreparedStatement pstmt = conn.prepareStatement(queryFindUserById);
+    ){
+      pstmt.setObject(1, id);
+      ResultSet rs = pstmt.executeQuery();
+      if(rs.next()){
+        return new User(
+          rs.getObject("user_id", UUID.class),
+          rs.getString("username"),
+          rs.getString("email"),
+          rs.getString("password"),
+          rs.getString("lastname"),
+          Role.fromValue(rs.getInt("rol_id")),       
+          rs.getObject("birthday", LocalDate.class),
+          rs.getObject("created_at", OffsetDateTime.class)
+        );
+      }
+      return null;
+    }catch (SQLException e){
+      throw errorFactory.databaseError("Error al buscar en la base de datos por ID: " + e.getMessage());
+    }
+  }
+
+  @Override
+  public User updateUser(User user){
+    String queryUpdateUser = """
+      UPDATE users
+      SET username = ?, email = ?, password = ?, lastname = ?, rol_id = ?, birthday = ?
+      WHERE user_id = ?
+    """;
+    try(
+      Connection conn = DbConfig.getConnection();
+      PreparedStatement pstmt = conn.prepareStatement(queryUpdateUser);
+    ){
+      pstmt.setString(1, user.getUsername());
+      pstmt.setString(2, user.getEmail());
+      pstmt.setString(3, user.getPassword());
+      pstmt.setString(4, user.getLastname());
+      pstmt.setInt(5, user.getRole().getValue());
+      pstmt.setObject(6, user.getBirthday());
+      pstmt.setObject(7, user.getId());
+
+      int affectedRows = pstmt.executeUpdate();
+      if (affectedRows == 0) {
+        throw errorFactory.notFound("No se pudo actualizar el usuario, no se encontró");
+      }
+      return user;
+    } catch (SQLException e) {
+      if ("23505".equals(e.getSQLState())) {
+        throw errorFactory.conflict("El email ya está en uso");
+      }
+      throw errorFactory.databaseError("Error al actualizar en la base de datos: " + e.getMessage());
+    }
+  }
+
+  @Override
   public List<User> findAllUsers(){
     String querySelectAllUser = """
       SELECT * FROM users

@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+import san.projectdates.core.dtos.UserCreateRequest;
 import at.favre.lib.crypto.bcrypt.BCrypt;
 
 public class User {
@@ -113,5 +114,13 @@ public class User {
       return;
     }
     this.role = role;
+  }
+
+  public void merge(UserCreateRequest request) {
+    if (request.username() != null) this.setUsername(request.username());
+    if (request.email() != null) this.setEmail(request.email());
+    if (request.password() != null) this.setPassword(request.password());
+    if (request.lastname() != null) this.setLastname(request.lastname());
+    if (request.role() != null) this.setRole(request.role());
   }
 }

@@ -3,6 +3,7 @@ package san.projectdates.core.services;
 import java.util.List;
 import java.util.UUID;
 
+import san.projectdates.core.dtos.UserCreateRequest;
 import san.projectdates.core.dtos.UserResponse;
 import san.projectdates.core.entities.Role;
 import san.projectdates.core.entities.User;
@@ -69,5 +70,21 @@ public class UserService {
     return fullUsers.stream()
       .map(user -> new UserResponse(user))
       .toList();
+  }
+
+  public UserResponse updateUser(UUID id, UserCreateRequest updateRequest) {
+    User user = userRepository.getUserById(id);
+    if (user == null) {
+      throw error.notFound("Usuario no encontrado");
+    }
+
+    if (updateRequest.email() != null && !user.getEmail().equals(updateRequest.email()) && isEmailTaken(updateRequest.email())) {
+      throw error.conflict("El correo ya está en uso");
+    }
+
+    user.merge(updateRequest);
+
+    User updatedUser = userRepository.updateUser(user);
+    return new UserResponse(updatedUser);
   }
 }

@@ -12,8 +12,6 @@ public class PermissionsService {
     this.permissionsRepository = permissionsRepository;
   }
 
-
-  //ahora es number pero puede ser de Tipo Role
   public List<Permissions> getPermissionsByRole(int role){
     List<Permissions> allPermissionsByRole = permissionsRepository.findAllPermissionsByRole(role);
     return allPermissionsByRole;

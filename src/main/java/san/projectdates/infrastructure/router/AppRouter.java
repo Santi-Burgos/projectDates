@@ -49,6 +49,7 @@ public class AppRouter{
         delete("/{id}", userController::delete);
         get("/{email}", userController::findOne);
         get("/", userController::findAll);
+        patch("/{id}", userController::update, AppPermission.UPDATE_USER);
       });
 
       path("/api/auth", () -> {

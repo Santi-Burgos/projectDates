@@ -10,4 +10,6 @@ public record AppPermission(String name) implements RouteRole {
   public static final AppPermission CREATE_CONCEPT = new AppPermission("create_concept");
   public static final AppPermission UPDATE_CONCEPT = new AppPermission("update_concept");
   public static final AppPermission DELETE_CONCEPT = new AppPermission("delete_concept");
+
+  public static final AppPermission UPDATE_USER = new AppPermission("update_user");
 }

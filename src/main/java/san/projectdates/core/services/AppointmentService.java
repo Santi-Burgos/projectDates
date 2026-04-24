@@ -126,14 +126,12 @@ public class AppointmentService {
     return false;
   }
 
-
-
   static Boolean fnValidateHours(Concept concept, Appointment appointmentRequest){
     List<TimeRange> disponivelHours = concept.getSchedule();
     for(TimeRange range : disponivelHours){
       if(
-        !range.openAsLocalTime().isAfter(appointmentRequest.startAtAsLocalTime()) && 
-        !range.closeAsLocalTime().isBefore(appointmentRequest.endAtAsLocalTime())
+        !range.openAsLocalTime().isAfter(appointmentRequest.startAtAsLocalTime()) 
+        && !range.closeAsLocalTime().isBefore(appointmentRequest.endAtAsLocalTime())
       ){
         return true;
       }
