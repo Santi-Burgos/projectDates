@@ -27,59 +27,17 @@ public class SqlConceptRepository implements ConceptRepository {
   }
 
   @Override
-  public Concept saveConcept(Concept concept){
-    if (concept.getIs24h()){
-      return this.executeSave24h(concept);
-    }else{
-      return this.executeSaveLimited(concept);
-    }
-  }
-
-  public Concept executeSave24h(Concept newConcept){
+  public Concept saveConcept(Concept concept) {
     String saveConcept = """
           INSERT INTO concept(concept_id, name, details, capacity, is_active, is_24h)
           VALUES(?, ?, ?, ?, ?, ?)
-          RETURNING *
-        """;
-
-    try (
-      Connection conn = DbConfig.getConnection();
-      PreparedStatement pstmt = conn.prepareStatement(saveConcept)
-    ){
-      pstmt.setObject(1, newConcept.getId());
-      pstmt.setString(2, newConcept.getName());
-      pstmt.setString(3, newConcept.getDetails());
-      pstmt.setInt(4, newConcept.getCapacity());
-      pstmt.setBoolean(5, newConcept.getIsActive());
-      pstmt.setBoolean(6, newConcept.getIs24h());
-
-      ResultSet rs = pstmt.executeQuery();
-      if (rs.next()) {
-        return new Concept(
-          rs.getObject("concept_id", java.util.UUID.class),
-          rs.getString("name"),
-          rs.getString("details"),
-          rs.getInt("capacity"),
-          rs.getBoolean("is_active"),
-          rs.getBoolean("is_24h")
-        );
-      }
-
-      return null;
-    } catch (SQLException e) {
-      throw errorFactory.databaseError("Error al guardar el concepto: " + e.getMessage());
-    }
-  }
-
-  public Concept executeSaveLimited(Concept newConcept) {
-
-    String saveConcept = """
-          INSERT INTO concept(concept_id, name, details, capacity, is_active, is_24h)
-          VALUES(?, ?, ?, ?, ?, ?)
-          RETURNING *
         """;
     String saveSchedule = """
           INSERT INTO slot(start_at, end_at, concept_id)
+          VALUES(?, ?, ?)
+        """;
+    String saveImage = """
+          INSERT INTO concept_img(concept_img_name, concept_img_url, concept_id)
           VALUES(?, ?, ?)
         """;
 
@@ -89,34 +47,43 @@ public class SqlConceptRepository implements ConceptRepository {
       conn.setAutoCommit(false);
 
       try (PreparedStatement pstmt = conn.prepareStatement(saveConcept)) {
-        pstmt.setObject(1, newConcept.getId());
-        pstmt.setString(2, newConcept.getName());
-        pstmt.setString(3, newConcept.getDetails());
-        pstmt.setInt(4, newConcept.getCapacity());
-        pstmt.setBoolean(5, newConcept.getIsActive());
-        pstmt.setBoolean(6, newConcept.getIs24h());
-
-        pstmt.executeQuery();
+        pstmt.setObject(1, concept.getId());
+        pstmt.setString(2, concept.getName());
+        pstmt.setString(3, concept.getDetails());
+        pstmt.setInt(4, concept.getCapacity());
+        pstmt.setBoolean(5, concept.getIsActive());
+        pstmt.setBoolean(6, concept.getIs24h());
+        pstmt.executeUpdate();
       }
 
-      try (PreparedStatement pstmt = conn.prepareStatement(saveSchedule)) {
-        for (TimeRange scheduleConcept : newConcept.getSchedule()) {
-          pstmt.setObject(1, Time.valueOf(scheduleConcept.getOpenTime()));
-          pstmt.setObject(2, Time.valueOf(scheduleConcept.getCloseTime()));
-          pstmt.setObject(3, newConcept.getId());
-          pstmt.addBatch();
+      if (!concept.getIs24h() && concept.getSchedule() != null && !concept.getSchedule().isEmpty()) {
+        try (PreparedStatement pstmt = conn.prepareStatement(saveSchedule)) {
+          for (TimeRange scheduleConcept : concept.getSchedule()) {
+            pstmt.setObject(1, java.sql.Time.valueOf(scheduleConcept.openAsLocalTime()));
+            pstmt.setObject(2, java.sql.Time.valueOf(scheduleConcept.closeAsLocalTime()));
+            pstmt.setObject(3, concept.getId());
+            pstmt.addBatch();
+          }
+          pstmt.executeBatch();
         }
-        pstmt.executeBatch();
+      }
+
+      if (concept.getNameImage() != null && concept.getUrlImage() != null) {
+        try (PreparedStatement pstmt = conn.prepareStatement(saveImage)) {
+          pstmt.setString(1, concept.getNameImage());
+          pstmt.setString(2, concept.getUrlImage());
+          pstmt.setObject(3, concept.getId());
+          pstmt.executeUpdate();
+        }
       }
 
       conn.commit();
-      return newConcept;
+      return concept;
     } catch (SQLException e) {
       if (conn != null) {
         try {
           conn.rollback();
         } catch (SQLException ex) {
-          System.out.println(ex.getMessage());
           throw new RuntimeException("Error al hacer rollback: " + ex.getMessage());
         }
       }
@@ -127,7 +94,6 @@ public class SqlConceptRepository implements ConceptRepository {
           conn.setAutoCommit(true);
           conn.close();
         } catch (SQLException e) {
-          System.out.println(e.getMessage());
           throw new RuntimeException("Error al cerrar conexión: " + e.getMessage());
         }
       }
@@ -137,7 +103,7 @@ public class SqlConceptRepository implements ConceptRepository {
   @Override
   public int deleteConcept(UUID conceptId) {
     String queryDeleteConcept = """
-          DELELTE FROM concept
+          DELETE FROM concept
           WHERE concept_id = ?
         """;
     try (
@@ -163,10 +129,14 @@ public class SqlConceptRepository implements ConceptRepository {
           c.is_24h AS fullTime,
           s.slot_id,
           s.start_at,
-          s.end_at
+          s.end_at,
+          ci.concept_img_name,
+          ci.concept_img_url
           FROM concept c
           LEFT JOIN slot s
             ON c.concept_id = s.concept_id
+          LEFT JOIN concept_img ci
+            ON c.concept_id = ci.concept_id
           WHERE c.is_active = true
         """;
     Map<UUID, Concept> conceptMap = new LinkedHashMap<>();
@@ -187,7 +157,9 @@ public class SqlConceptRepository implements ConceptRepository {
               rs.getString("details"),
               rs.getInt("capacity"),
               rs.getBoolean("is_active"),
-              rs.getBoolean("fullTime"));
+              rs.getBoolean("fullTime"),
+              rs.getString("concept_img_name"),
+              rs.getString("concept_img_url"));
 
           conceptMap.put(conceptId, concept);
           tempSchedules.put(conceptId, new ArrayList<>());
@@ -226,10 +198,14 @@ public class SqlConceptRepository implements ConceptRepository {
           c.is_24h AS fullTime,
           s.slot_id,
           s.start_at,
-          s.end_at
+          s.end_at,
+          ci.concept_img_name,
+          ci.concept_img_url
           FROM concept c
           LEFT JOIN slot s
           ON c.concept_id = s.concept_id
+          LEFT JOIN concept_img ci
+          ON c.concept_id = ci.concept_id
           WHERE c.concept_id = ?
         """;
     try (
@@ -249,7 +225,9 @@ public class SqlConceptRepository implements ConceptRepository {
               rs.getString("details"),
               rs.getInt("capacity"),
               rs.getBoolean("is_active"),
-              rs.getBoolean("fullTime"));
+              rs.getBoolean("fullTime"),
+              rs.getString("concept_img_name"),
+              rs.getString("concept_img_url"));
         }
 
         String start = rs.getString("start_at");

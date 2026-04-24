@@ -1,5 +1,7 @@
 package san.projectdates.core.services;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.UUID;
 
@@ -8,24 +10,31 @@ import san.projectdates.core.dtos.ConceptResponse;
 import san.projectdates.core.entities.Concept;
 import san.projectdates.core.repositories.ConceptRepository;
 import san.projectdates.core.repositories.ErrorFactory;
+import san.projectdates.core.repositories.ImageStorage;
 
 public class ConceptService {
   private final ConceptRepository conceptRepository;
   private final ErrorFactory errorFactory;
+  private final ImageStorage imageStorage;
 
-  public ConceptService(ConceptRepository conceptRepository, ErrorFactory errorFactory) {
+  public ConceptService(ConceptRepository conceptRepository, ErrorFactory errorFactory, ImageStorage imageStorage) {
     this.conceptRepository = conceptRepository;
     this.errorFactory = errorFactory;
+    this.imageStorage = imageStorage;
   }
 
-  public ConceptResponse createConcept(ConceptRequest conceptInfo) {
+  public ConceptResponse createConcept(ConceptRequest conceptInfo, InputStream imageStream, String fileName) throws IOException{
+    String urlImage = imageStorage.save(fileName, imageStream);
     Concept newConcept = new Concept(
-        conceptInfo.name(),
-        conceptInfo.details(),
-        conceptInfo.capacity(),
-        conceptInfo.isActive(),
-        conceptInfo.is24h(),
-        conceptInfo.schedule());
+      conceptInfo.name(),
+      conceptInfo.details(),
+      conceptInfo.capacity(),
+      conceptInfo.isActive(),
+      conceptInfo.is24h(),
+      conceptInfo.schedule(),
+      fileName,
+      urlImage
+    );
 
     Concept createdConcept = conceptRepository.saveConcept(newConcept);
     return new ConceptResponse(createdConcept);

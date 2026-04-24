@@ -57,7 +57,7 @@ public class AppRouter{
       });
 
       path("/api/concept", () -> {
-        post(conceptController::createConcept, AppPermission.CREATE_CONCEPT);
+        post(conceptController::createConcept);
         get("/{id}", conceptController::findOneConcept);
         get(conceptController::findActiveConcept);
         patch("/{id}", conceptController::updateConcept, AppPermission.UPDATE_CONCEPT);

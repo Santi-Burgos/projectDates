@@ -23,6 +23,7 @@ import san.projectdates.core.exceptions.DomainException;
 import san.projectdates.infrastructure.factories.ErrorFactoryImpl;
 import san.projectdates.infrastructure.http.middleware.GlobalExceptionHandler;
 import san.projectdates.infrastructure.http.middleware.PermissionsMiddleware;
+import san.projectdates.infrastructure.factories.ImageFactoryImpl;
 
 public class Main {
   public static void main(String[] args) {
@@ -40,7 +41,8 @@ public class Main {
     AppointmentRepository appointmentRepo = new SqlAppointmentRepository(errorFactory);
 
     JwtService jwtService = new JwtService();
-    ConceptService conceptService = new ConceptService(conceptRepo, errorFactory);
+    ImageFactoryImpl imageStorage = new ImageFactoryImpl();
+    ConceptService conceptService = new ConceptService(conceptRepo, errorFactory, imageStorage);
     UserService userService = new UserService(repo, errorFactory);
     AuthService authService = new AuthService(userService, jwtService, errorFactory);
     AppointmentService appointmentService = new AppointmentService(appointmentRepo, conceptRepo, errorFactory);

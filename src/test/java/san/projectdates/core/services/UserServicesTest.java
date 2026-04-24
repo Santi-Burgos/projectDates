@@ -17,7 +17,7 @@ import java.util.ArrayList;
 class UserServicesTest {
   private UserRepository mockRepository;
   private UserService userService;
-
+  
   @BeforeEach
   public void setUp() {
     this.mockRepository = new UserRepository() {
@@ -54,6 +54,16 @@ class UserServicesTest {
       @Override
       public List<User> findAllUsers() {
         return new ArrayList<>();
+      }
+
+      @Override
+      public User getUserById(UUID id) {
+        return null;
+      }
+
+      @Override
+      public User updateUser(User user) {
+        return user;
       }
     };
 

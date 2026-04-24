@@ -12,12 +12,14 @@ public class Concept {
   int capacity;
   Boolean isActive;
   Boolean is24h;
+  String nameImage;
+  String urlImage;
   List<TimeRange> schedule;
 
   public Concept() {
   }
 
-  public Concept(String name, String details, int capacity, Boolean isActive, Boolean is24h, List<TimeRange> schedule) {
+  public Concept(String name, String details, int capacity, Boolean isActive, Boolean is24h, List<TimeRange> schedule, String nameImage, String urlImage){
     this.setId();
     this.setName(name);
     this.setDetails(details);
@@ -25,15 +27,20 @@ public class Concept {
     this.setIsActive(isActive);
     this.setIs24h(is24h);
     this.setSchedule(is24h, schedule);
+    this.setNameImage(nameImage);
+    this.setUrlImage(urlImage);
+
   }
 
-  public Concept(UUID id, String name, String details, int capacity, Boolean isActive, Boolean is24h) {
+  public Concept(UUID id, String name, String details, int capacity, Boolean isActive, Boolean is24h, String nameImage, String urlImage) {
     this.id = id;
     this.name = name;
     this.details = details;
     this.capacity = capacity;
     this.isActive = isActive;
     this.is24h = is24h;
+    this.nameImage = nameImage;
+    this.urlImage = urlImage;
   }
 
   public UUID getId() {
@@ -108,6 +115,22 @@ public class Concept {
       validateNoOverlap(schedule);
     }
     this.schedule = schedule;
+  }
+
+  public String getNameImage(){
+    return nameImage;
+  }
+
+  public void setNameImage(String nameImage){
+    this.nameImage = nameImage;
+  }
+  
+  public String getUrlImage(){
+    return urlImage;
+  }
+  
+  public void setUrlImage(String urlImage){
+    this.urlImage = urlImage;
   }
 
   public void merge(ConceptRequest request){

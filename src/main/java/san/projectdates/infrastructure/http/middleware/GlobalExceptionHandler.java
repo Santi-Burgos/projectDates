@@ -17,6 +17,7 @@ public class GlobalExceptionHandler {
 
   public static void handleGeneralException(Exception e, Context ctx) {
     logger.error("Unexpected Error: ", e);
+    System.out.println("Unexpected error: " + e);
     ctx.status(500).json(ApiResponse.error("Ha ocurrido un error inesperado interno"));
   }
 }

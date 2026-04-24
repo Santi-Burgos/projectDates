@@ -13,7 +13,8 @@ public record ConceptResponse(
   int capacity,
   Boolean is_active,
   Boolean is_24hs,
-  List<TimeRange> schedule
+  List<TimeRange> schedule,
+  String url_image
 ){
   public ConceptResponse(Concept concept){
     this(
@@ -23,7 +24,8 @@ public record ConceptResponse(
       concept.getCapacity(),
       concept.getIsActive(),
       concept.getIs24h(),
-      concept.getSchedule()
+      concept.getSchedule(),
+      concept.getUrlImage()
     );
   }
 }
