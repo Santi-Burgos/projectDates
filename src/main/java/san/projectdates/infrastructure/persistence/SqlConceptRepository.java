@@ -37,8 +37,8 @@ public class SqlConceptRepository implements ConceptRepository {
           VALUES(?, ?, ?)
         """;
     String saveImage = """
-          INSERT INTO concept_img(concept_img_name, concept_img_url, concept_id)
-          VALUES(?, ?, ?)
+          INSERT INTO concept_img(concept_img_name, concept_img_url, concept_image_disk_name, concept_id)
+          VALUES(?, ?, ?, ?)
         """;
 
     Connection conn = null;
@@ -72,7 +72,8 @@ public class SqlConceptRepository implements ConceptRepository {
         try (PreparedStatement pstmt = conn.prepareStatement(saveImage)) {
           pstmt.setString(1, concept.getNameImage());
           pstmt.setString(2, concept.getUrlImage());
-          pstmt.setObject(3, concept.getId());
+          pstmt.setString(3, concept.getIdNameDisk());
+          pstmt.setObject(4, concept.getId());
           pstmt.executeUpdate();
         }
       }
@@ -159,7 +160,9 @@ public class SqlConceptRepository implements ConceptRepository {
               rs.getBoolean("is_active"),
               rs.getBoolean("fullTime"),
               rs.getString("concept_img_name"),
-              rs.getString("concept_img_url"));
+              rs.getString("concept_img_url"),
+              rs.getString("concept_img_disk_name")
+            );
 
           conceptMap.put(conceptId, concept);
           tempSchedules.put(conceptId, new ArrayList<>());
@@ -227,7 +230,9 @@ public class SqlConceptRepository implements ConceptRepository {
               rs.getBoolean("is_active"),
               rs.getBoolean("fullTime"),
               rs.getString("concept_img_name"),
-              rs.getString("concept_img_url"));
+              rs.getString("concept_img_url"),
+              rs.getString("concept_img_disk_name")
+            );
         }
 
         String start = rs.getString("start_at");

@@ -14,25 +14,26 @@ public class Concept {
   Boolean is24h;
   String nameImage;
   String urlImage;
+  String idNameDisk;
   List<TimeRange> schedule;
 
   public Concept() {
   }
 
-  public Concept(String name, String details, int capacity, Boolean isActive, Boolean is24h, List<TimeRange> schedule, String nameImage, String urlImage){
+  public Concept(String name, String details, int capacity, Boolean isActive, Boolean is24h, List<TimeRange> schedule, String nameImage, String urlImage, String idNameDisk){
     this.setId();
     this.setName(name);
     this.setDetails(details);
-    setCapacity(capacity);
+    this.setCapacity(capacity);
     this.setIsActive(isActive);
     this.setIs24h(is24h);
     this.setSchedule(is24h, schedule);
     this.setNameImage(nameImage);
     this.setUrlImage(urlImage);
-
+    this.setIdNameDisk(idNameDisk);
   }
 
-  public Concept(UUID id, String name, String details, int capacity, Boolean isActive, Boolean is24h, String nameImage, String urlImage) {
+  public Concept(UUID id, String name, String details, int capacity, Boolean isActive, Boolean is24h, String nameImage, String urlImage, String idNameDisk) {
     this.id = id;
     this.name = name;
     this.details = details;
@@ -40,6 +41,7 @@ public class Concept {
     this.isActive = isActive;
     this.is24h = is24h;
     this.nameImage = nameImage;
+    this.idNameDisk = idNameDisk;
     this.urlImage = urlImage;
   }
 
@@ -131,6 +133,14 @@ public class Concept {
   
   public void setUrlImage(String urlImage){
     this.urlImage = urlImage;
+  }
+
+  public String getIdNameDisk(){
+    return idNameDisk;
+  }
+
+  public void setIdNameDisk(String idNameDisk){
+    this.idNameDisk = idNameDisk;
   }
 
   public void merge(ConceptRequest request){

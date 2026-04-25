@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import san.projectdates.core.dtos.ConceptRequest;
 import san.projectdates.core.dtos.ConceptResponse;
+import san.projectdates.core.dtos.ImageResultOperation;
 import san.projectdates.core.entities.Concept;
 import san.projectdates.core.entities.TimeRange;
 import san.projectdates.core.repositories.ConceptRepository;
@@ -54,9 +55,11 @@ public class ConceptServiceTest {
 
     ImageStorage mockImageStorage = new ImageStorage() {
       @Override
-      public String save(String fileName, InputStream fileContent) throws IOException {
-        return "/uploads/" + fileName;
+      public ImageResultOperation save(String fileName, InputStream fileContent) throws IOException {
+        return new ImageResultOperation("/uploads/" + fileName, fileName);
       }
+      @Override
+      public void delete(String filename) throws IOException{}
     };
 
     ErrorFactoryImpl errorFactoryImpl = new ErrorFactoryImpl();

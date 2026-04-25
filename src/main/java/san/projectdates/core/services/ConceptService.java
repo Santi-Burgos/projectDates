@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import san.projectdates.core.dtos.ConceptRequest;
 import san.projectdates.core.dtos.ConceptResponse;
+import san.projectdates.core.dtos.ImageResultOperation;
 import san.projectdates.core.entities.Concept;
 import san.projectdates.core.repositories.ConceptRepository;
 import san.projectdates.core.repositories.ErrorFactory;
@@ -24,7 +25,9 @@ public class ConceptService {
   }
 
   public ConceptResponse createConcept(ConceptRequest conceptInfo, InputStream imageStream, String fileName) throws IOException{
-    String urlImage = imageStorage.save(fileName, imageStream);
+    
+    ImageResultOperation savedImage = imageStorage.save(fileName, imageStream);
+
     Concept newConcept = new Concept(
       conceptInfo.name(),
       conceptInfo.details(),
@@ -33,7 +36,8 @@ public class ConceptService {
       conceptInfo.is24h(),
       conceptInfo.schedule(),
       fileName,
-      urlImage
+      savedImage.path(),
+      savedImage.diskName()
     );
 
     Concept createdConcept = conceptRepository.saveConcept(newConcept);

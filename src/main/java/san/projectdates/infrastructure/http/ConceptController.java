@@ -43,7 +43,6 @@ public class ConceptController {
         is24h,
         schedule
       );
-
       ConceptResponse newConcept = conceptService.createConcept(conceptToCreate, file.content(), file.filename());
       ctx.status(201).json(ApiResponse.success(newConcept, "Concepto creado con éxito"));
     }catch(IOException e){
