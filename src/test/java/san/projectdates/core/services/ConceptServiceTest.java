@@ -59,7 +59,7 @@ public class ConceptServiceTest {
         return new ImageResultOperation("/uploads/" + fileName, fileName);
       }
       @Override
-      public void delete(String filename) throws IOException{}
+      public void delete(String filename){}
     };
 
     ErrorFactoryImpl errorFactoryImpl = new ErrorFactoryImpl();

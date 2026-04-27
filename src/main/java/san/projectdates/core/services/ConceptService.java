@@ -26,7 +26,16 @@ public class ConceptService {
 
   public ConceptResponse createConcept(ConceptRequest conceptInfo, InputStream imageStream, String fileName) throws IOException{
     
-    ImageResultOperation savedImage = imageStorage.save(fileName, imageStream);
+    String nameImage = null;
+    String urlImage = null;
+    String idNameDisk = null;
+
+    if (fileName != null && imageStream != null) {
+      ImageResultOperation savedImage = imageStorage.save(fileName, imageStream);
+      nameImage = fileName;
+      urlImage = savedImage.path();
+      idNameDisk = savedImage.diskName();
+    }
 
     Concept newConcept = new Concept(
       conceptInfo.name(),
@@ -35,9 +44,9 @@ public class ConceptService {
       conceptInfo.isActive(),
       conceptInfo.is24h(),
       conceptInfo.schedule(),
-      fileName,
-      savedImage.path(),
-      savedImage.diskName()
+      nameImage,
+      urlImage,
+      idNameDisk
     );
 
     Concept createdConcept = conceptRepository.saveConcept(newConcept);
@@ -54,7 +63,7 @@ public class ConceptService {
 
   public ConceptResponse findOneConcept(UUID concetpId) {
     Concept concept = conceptRepository.findConceptById(concetpId);
-
+    System.out.println(concept);
     return new ConceptResponse(concept);
   }
 
@@ -65,12 +74,21 @@ public class ConceptService {
     return new ConceptResponse(concept);
   }
 
-  public String deleteConcept(UUID conceptId) {
+  public String deleteConcept(UUID conceptId){
+    Concept concept = conceptRepository.findConceptById(conceptId);
+    if(concept == null){
+      throw  errorFactory.notFound("El concepto no existe");
+    }
+
+    if(concept.getIdNameDisk() != null){
+      imageStorage.delete(concept.getIdNameDisk());
+    }
+
     int deletedConcept = conceptRepository.deleteConcept(conceptId);
     if (deletedConcept == 0) {
       throw errorFactory.badRequest("No se ha eliminado ningun usuario");
     }
-    String response = "Filas eliminadas: " + deletedConcept + " Usuario eliminado con exito";
+    String response = "Filas eliminadas: " + deletedConcept + " Concepto eliminado con exito";
     return response;
   }
 

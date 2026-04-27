@@ -8,5 +8,5 @@ import san.projectdates.core.dtos.ImageResultOperation;
 public interface ImageStorage {
   ImageResultOperation save(String fileName, InputStream fileContent) throws IOException; 
 
-  void delete(String fileName) throws IOException;
+  void delete(String idNameDisk);
 }

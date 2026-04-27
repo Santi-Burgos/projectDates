@@ -15,8 +15,7 @@ public class ImageFactoryImpl implements ImageStorage {
   private final String uploadDir = "uploads";
 
   @Override
-  public ImageResultOperation save(String fileName, InputStream fileContent) throws IOException {
-    
+  public ImageResultOperation save(String fileName, InputStream fileContent) throws IOException{
     Path pathDir = Paths.get(uploadDir);
     if (!Files.exists(pathDir)) {
       Files.createDirectories(pathDir);
@@ -26,15 +25,24 @@ public class ImageFactoryImpl implements ImageStorage {
 
     Path targetPath = pathDir.resolve(idImageDisk);
     Files.copy(fileContent, targetPath, StandardCopyOption.REPLACE_EXISTING);
-    String finalPath = "/" + uploadDir + "/" + fileName;
+    String finalPath = "/" + uploadDir + "/" + idImageDisk;
     return new ImageResultOperation(finalPath, idImageDisk);
   }
 
   @Override
-  public void delete(String fileName) throws IOException{
-    Path pathDir = Paths.get(uploadDir);
-    Path targetPath = pathDir.resolve(fileName);
-    Files.deleteIfExists(targetPath);
+  public void delete(String idNameDisk) {
+    if (idNameDisk == null) {
+      throw new IllegalArgumentException("Nombre de archivo inválido: " + idNameDisk);
+    }
+    try {
+      Path targetPath = Paths.get(uploadDir).resolve(idNameDisk).normalize();
+
+      if (Files.exists(targetPath)) {
+        Files.delete(targetPath);
+      }
+    } catch (IOException e) {
+      throw new RuntimeException("No se pudo eliminar el recurso del servidor", e);
+    }
   }
 
   private String generateImageIdName(String fileName){
@@ -45,6 +53,6 @@ public class ImageFactoryImpl implements ImageStorage {
       throw new RuntimeException("Error interno, no se ha podido extraer el path");
     }
 
-    return idName + fileName.substring(lastIndexOf + 1);  
+    return idName + "." + fileName.substring(lastIndexOf + 1);  
   }
 }

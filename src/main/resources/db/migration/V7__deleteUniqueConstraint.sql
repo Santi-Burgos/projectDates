@@ -1,0 +1,2 @@
+ALTER TABLE concept_img 
+DROP CONSTRAINT concept_img_concept_img_name_key;

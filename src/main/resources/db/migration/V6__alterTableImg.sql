@@ -1,0 +1,2 @@
+ALTER TABLE concept_img
+RENAME COLUMN concept_image_disk_name TO concept_img_disk_name;

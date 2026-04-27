@@ -37,7 +37,7 @@ public class SqlConceptRepository implements ConceptRepository {
           VALUES(?, ?, ?)
         """;
     String saveImage = """
-          INSERT INTO concept_img(concept_img_name, concept_img_url, concept_image_disk_name, concept_id)
+          INSERT INTO concept_img(concept_img_name, concept_img_url, concept_img_disk_name, concept_id)
           VALUES(?, ?, ?, ?)
         """;
 
@@ -132,7 +132,8 @@ public class SqlConceptRepository implements ConceptRepository {
           s.start_at,
           s.end_at,
           ci.concept_img_name,
-          ci.concept_img_url
+          ci.concept_img_url,
+          ci.concept_img_disk_name
           FROM concept c
           LEFT JOIN slot s
             ON c.concept_id = s.concept_id
@@ -203,7 +204,8 @@ public class SqlConceptRepository implements ConceptRepository {
           s.start_at,
           s.end_at,
           ci.concept_img_name,
-          ci.concept_img_url
+          ci.concept_img_url,
+          ci.concept_img_disk_name
           FROM concept c
           LEFT JOIN slot s
           ON c.concept_id = s.concept_id
@@ -219,7 +221,7 @@ public class SqlConceptRepository implements ConceptRepository {
 
       Concept concept = null;
       List<TimeRange> slots = new ArrayList<>();
-
+      
       while (rs.next()) {
         if (concept == null) {
           concept = new Concept(
