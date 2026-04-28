@@ -116,11 +116,8 @@ public class AppointmentService {
       ;
     }
 
-    Appointment hasReservation = appointmentRepository.findReservationByDate(appointmentData);
-    // falta una validacion para saber si no inicia pero si un bloque mio coincide
-    // con este
-
-    if (hasReservation == null) {
+    Appointment overlappingReservation = appointmentRepository.findOverlappingReservation(appointmentData);
+    if (overlappingReservation == null){
       return true;
     }
     return false;

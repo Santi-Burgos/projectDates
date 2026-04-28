@@ -134,6 +134,42 @@ public class SqlAppointmentRepository implements AppointmentRepository {
   }
 
   @Override
+  public Appointment findOverlappingReservation(Appointment appointmentData){
+    String queryFindReservation = """
+          SELECT * FROM appointments
+          WHERE concept_id = ?
+          AND appointments_day::date = ?
+          AND start_at::time < ?
+          AND end_at::time > ?
+        """;
+
+    try (
+        Connection conn = DbConfig.getConnection();
+        PreparedStatement pstmt = conn.prepareStatement(queryFindReservation);){
+      pstmt.setObject(1, appointmentData.getConceptId());
+      pstmt.setObject(2, appointmentData.appoinmentDayAsLocalDate());
+      pstmt.setObject(3, appointmentData.endAtAsLocalTime());
+      pstmt.setObject(4, appointmentData.startAtAsLocalTime());
+
+      ResultSet rs = pstmt.executeQuery();
+      if (rs.next()) {
+        return new Appointment(
+          rs.getObject("appointments_id", UUID.class),
+          rs.getObject("concept_id", UUID.class),
+          rs.getObject("user_id", UUID.class),
+          rs.getTime("start_at").toString(),
+          rs.getTime("end_at").toString(),
+          rs.getObject("created_at", OffsetDateTime.class).toLocalDateTime(),
+          rs.getDate("appointments_day").toString()
+        );
+      }
+      return null;
+    }catch(SQLException e){
+      throw errorFactory.databaseError("Error al buscar reservas superpuestas: " + e.getMessage());
+    }
+  }
+
+  @Override
   public List<Appointment> getAllAppointments() {
     String queryFindAppointments = """
           SELECT * FROM appointments

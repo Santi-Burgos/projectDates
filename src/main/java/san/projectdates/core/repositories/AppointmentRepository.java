@@ -13,6 +13,8 @@ public interface AppointmentRepository {
 
   Appointment findReservationByDate(Appointment appointmentData);
 
+  Appointment findOverlappingReservation(Appointment appointmentData);
+
   void cancelReservation(UUID appointmentId);
 
   List<Appointment>getAllAppointments();
